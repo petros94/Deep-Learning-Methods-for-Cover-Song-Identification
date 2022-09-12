@@ -1,0 +1,30 @@
+{
+    "representation": "mfcc",
+    "datasets": [
+        {
+            "type": "covers1000",
+            "path": "/Users/petros/Downloads/MFCCs/",
+            "n_samples": 100
+        }
+    ],
+    "model": {
+        "type": "resnet18",
+        "config_path": "models/resnet18/config.json"
+    },
+    "loss": "triplet",
+    "features": {
+        "samples_per_song": 2,
+        "input": "mfcc",
+        "frame_size": 1400,
+        "scale": [
+            1,
+            1
+        ]
+    },
+    "train": {
+        "train_perc": 0.8,
+        "n_epochs": 10,
+        "batch_size": 32,
+        "lr": 5e-4
+    }
+}
