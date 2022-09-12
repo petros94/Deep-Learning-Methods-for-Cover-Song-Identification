@@ -23,5 +23,5 @@ def make_model(config_path: str = 'models/config.json'):
     if config['model']['type'] not in AVAILABLE_TYPES:
         raise ValueError("Invalid type")
     
-    if config['model']['type'] == "resnet":
+    if config['model']['type'] == "resnet18":
         return make_resnet(config_path=config['model']['config_path'])
