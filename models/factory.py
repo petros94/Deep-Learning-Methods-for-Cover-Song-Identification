@@ -2,7 +2,7 @@ import json
 from models.resnet18.ResNet18 import from_config as make_resnet
 import json
 
-AVAILABLE_TYPES = ["resnet"]
+AVAILABLE_TYPES = ["resnet18"]
 
 def make_model(config_path: str = 'models/config.json'):
     """Factory to generate models from configuration
