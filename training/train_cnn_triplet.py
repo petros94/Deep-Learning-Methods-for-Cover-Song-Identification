@@ -25,7 +25,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, b
         epoch_loss = 0
         model.train()
 
-        for batch, x in enumerate(train_dataloader):
+        for batch, (x, metadata) in enumerate(train_dataloader):
 
             optimizer.zero_grad()
             (anchor, pos, neg) = x 
@@ -53,7 +53,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, b
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for batch, x in enumerate(valid_dataloader):     
+                for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
                     (anchor, pos, neg) = x 
 
