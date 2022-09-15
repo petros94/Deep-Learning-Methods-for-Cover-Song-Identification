@@ -42,7 +42,7 @@ def from_config(config_path: str):
         config_path (str): The path to the configuration file
     """
     with open(config_path, "r") as f:
-        config = json.load(f)['model']
+        config = json.load(f)
         return ResNet18(out_channels=config['out_channels'],
                         kernel_size=config['kernel_size'], 
                         stride=config['stride'], 
