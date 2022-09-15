@@ -1,8 +1,9 @@
+import json
 import torch
 
 from utils.generic import get_device 
 
-def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, batch_size, lr):
+def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, save_path):
 
     device = get_device()
     collate_fn_train = getattr(train_set, "collate_fn", None)
@@ -20,6 +21,9 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, b
 
     train_batches = int(len(train_set)/batch_size)
     valid_batches = int(len(valid_set)/batch_size)
+    
+    best_loss = 1000000
+    current_patience = 0
     for epoch in range(n_epochs):
         print(32*"=")
         print(f"Epoch {epoch}")
@@ -68,6 +72,30 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, b
 
                     loss = criterion(anchor_out, pos_out, neg_out)
                     valid_loss += loss.item()
+            
                 print(f"Epoch {epoch} valid loss: {valid_loss/valid_batches}")
-
+                if valid_loss < best_loss:
+                    print("New best loss, saving model")
+                    best_loss = valid_loss
+                    current_patience = 0
+                    
+                    # Export best model checkpoint
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'loss': valid_loss/valid_batches,
+                        }, save_path + "/checkpoint.tar")
+                    
+                    # Save results
+                    with open(save_path + '/train_results.json') as f:
+                        json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+                else:
+                    current_patience +=1
+                
+                
+        if current_patience == patience:
+            print(f"No further improvement after {patience} epochs, breaking.")
+            break
+                    
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}")
