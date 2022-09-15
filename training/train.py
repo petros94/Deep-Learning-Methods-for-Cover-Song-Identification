@@ -7,4 +7,4 @@ def train(model, train_set, valid_set, config_path):
         config = json.load(f)
         
     if config['loss'] == 'triplet' and config['model']['type'] in ('resnet18'):
-        return train_triplet_loss(model, train_set, valid_set, config['train']['n_epochs'], config['train']['batch_size'], config['train']['lr'])
+        return train_triplet_loss(model, train_set, valid_set, config['train']['n_epochs'], config['train']['batch_size'], config['train']['lr'], config['device'])
