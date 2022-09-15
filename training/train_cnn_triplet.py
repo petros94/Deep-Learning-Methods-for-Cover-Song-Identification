@@ -1,7 +1,10 @@
-import torch 
+import torch
 
-def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, batch_size, lr, device):
+from utils.generic import get_device 
 
+def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, batch_size, lr):
+
+    device = get_device()
     collate_fn = getattr(train_set, "collate_fn", None)
 
     model.train()

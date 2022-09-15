@@ -1,6 +1,6 @@
 import imp
 import torch
-from utils.generic import generate_triplets, retrieve_repr, repr_triplet_2_segments, frame_idx_2_time
+from utils.generic import generate_triplets, get_device, retrieve_repr, repr_triplet_2_segments, frame_idx_2_time
 
 class TripletDataset(torch.utils.data.Dataset):
     def __init__(self, songs, samples_per_song=10, frame_size=400, scale=(1, 0.33)):
@@ -32,7 +32,7 @@ class TripletDataset(torch.utils.data.Dataset):
             time_start, time_end, duration = frame_idx_2_time(idx, self.frame_size)
             metadata['time'].append("start: {}, end: {}".format(time_start, time_end))
     
-        return torch.cat(x).transpose(0,1).to(device), metadata
+        return torch.cat(x).transpose(0,1).to(get_device()), metadata
 
     def __getitem__(self, idx):
         triplet = self.triplets[idx]
