@@ -28,6 +28,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
         print(32*"=")
         print(f"Epoch {epoch}")
         epoch_loss = 0
+        total_frames = 0
         model.train()
 
         for batch, (x, metadata) in enumerate(train_dataloader):
@@ -49,6 +50,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
             optimizer.step()
 
             epoch_loss += loss.item()
+            total_frames += metadata["n_frames"]
 
             if batch%16==0:
                 print(f'batch {batch}/{train_batches}, loss: {loss.item()}')
@@ -99,3 +101,4 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
             break
                     
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}")
+        print(f"Total train samples: {total_frames}")

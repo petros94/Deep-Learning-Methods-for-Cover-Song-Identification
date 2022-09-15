@@ -15,13 +15,15 @@ class TripletDataset(torch.utils.data.Dataset):
         metadata = {
             "title": [],
             "time": [],
-            "frame_id": []
+            "frame_id": [],
+            "n_frames": 0
         }
         
         for triplet in batch:
             mfccs = [torch.from_numpy(retrieve_repr(self.songs, v['song_id'], v['cover_id'])) for v in list(triplet.values())]
             segs = repr_triplet_2_segments(mfccs, self.frame_size, scale=self.scale)
             x.append(segs)
+            metadata["n_frames"] += segs.size(0)
 
         new_title = ["c_id: " + list(triplet.values())[0]['cover_id'] + " | s_id: " + list(triplet.values())[0]['song_id']]*len(segs)
         
