@@ -9,6 +9,9 @@ import torch
 from torch.nn import functional as F
 from sklearn.model_selection import train_test_split
 
+def get_device():
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
 def retrieve_repr(songs, song_id, cover_id) -> np.array:
     """
     Retrieve the repr array for a given song and cover.

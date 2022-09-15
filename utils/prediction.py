@@ -3,10 +3,7 @@ Prediction Utils
 """
 import torch
 import numpy as np
-from utils.generic import extract_frame_triplet
-
-global device
-
+from utils.generic import extract_frame_triplet, get_device
 
 def embed(model, frames):
     model.eval()
@@ -35,6 +32,9 @@ def triplet_song_distance(model, song1, song2, song3):
 
 
 def extract_and_distance(model, songs, triplets, triplet_idx, frame_idx):
+    
+    device = get_device()
+    
     f1 = extract_frame_triplet(
         songs, triplets, model.frame_size, triplet_idx, 0, frame_idx, model.scale
     )
