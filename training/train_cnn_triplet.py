@@ -88,7 +88,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
                         }, save_path + "/checkpoint.tar")
                     
                     # Save results
-                    with open(save_path + '/train_results.json') as f:
+                    with open(save_path + '/train_results.json', "w") as f:
                         json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
                 else:
                     current_patience +=1
