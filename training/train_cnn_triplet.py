@@ -5,7 +5,8 @@ from utils.generic import get_device
 def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, batch_size, lr):
 
     device = get_device()
-    collate_fn = getattr(train_set, "collate_fn", None)
+    collate_fn_train = getattr(train_set, "collate_fn", None)
+    collate_fn_test = getattr(valid_set, "collate_fn", None)
 
     model.train()
     model.to(device)
@@ -13,8 +14,8 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, b
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = torch.nn.TripletMarginLoss()
 
-    train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
-    valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
+    train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_train)
+    valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_test)
 
 
     train_batches = int(len(train_set)/batch_size)
