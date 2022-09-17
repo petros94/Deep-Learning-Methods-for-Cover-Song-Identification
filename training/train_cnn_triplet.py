@@ -3,7 +3,7 @@ import torch
 
 from utils.generic import get_device 
 
-def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, save_path):
+def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
     device = get_device()
     collate_fn_train = getattr(train_set, "collate_fn", None)
@@ -87,10 +87,10 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'loss': valid_loss/valid_batches,
-                        }, save_path + "/checkpoint.tar")
+                        }, checkpoints_path + "/checkpoint.tar")
                     
                     # Save results
-                    with open(save_path + '/train_results.json', "w") as f:
+                    with open(results_path + '/train_results.json', "w") as f:
                         json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
                 else:
                     current_patience +=1
