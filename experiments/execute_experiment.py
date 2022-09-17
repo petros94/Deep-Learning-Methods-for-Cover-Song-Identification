@@ -20,10 +20,14 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         config = json.load(f)
         
     print("Creating directory for checkpoint and saving configuration used")
-    dir_name = config['train']['checkpoints_path'] + f"{datetime.now()}_{config['model']['type']}_{config['features']['input']}_{config['loss']}"
-    os.mkdir(dir_name)
-    with open(dir_name + "/config.json", "w") as f:
+    date_ = f"{datetime.now()}_{config['model']['type']}_{config['features']['input']}_{config['loss']}"
+    chk_dir_name = config['train']['checkpoints_path'] + date_
+    os.mkdir(chk_dir_name)
+    with open(chk_dir_name + "/config.json", "w") as f:
         json.dump(config, f)
+        
+    res_dir_name = config['train']['results_path'] + date_
+    os.mkdir(res_dir_name)
         
     print("Loading songs")
     songs = from_config(config_path=config_path)
@@ -37,7 +41,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     model = make_model(config_path=config_path)
     
     print("Begin training")
-    train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=dir_name) 
+    train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
     
     print("Begin validation set testing")
     valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=config['train']['batch_size'], shuffle=True, collate_fn=getattr(valid_set, "collate_fn", None))

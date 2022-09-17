@@ -27,6 +27,7 @@
         "batch_size": 4,
         "lr": 5e-4,
         "patience": 3,
-        "checkpoints_path": "checkpoints/"
+        "checkpoints_path": "checkpoints/",
+        "results_path": "results/"
     }
 }
