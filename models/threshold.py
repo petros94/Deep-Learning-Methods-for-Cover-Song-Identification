@@ -33,12 +33,12 @@ class Threshold:
                 pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
                 
                 #first dimension: N X 128
-                first, second = model(pair[0]), model(pair[1])                
-                distances.append(torch.norm(first - second, dim=1))
-                labels.extend([label]*batch_size)
+                first, second = model(pair[0]), model(pair[1])  
+                dist = torch.norm(first - second, dim=1)       
+                distances.append(dist)
+                labels.extend([label]*dist.size()[0])
                                 
         distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
-        print(len(distances), len(labels))
         fpr, tpr, thresholds = roc_curve(labels, distances)
         roc_auc = auc(fpr, tpr)
         
