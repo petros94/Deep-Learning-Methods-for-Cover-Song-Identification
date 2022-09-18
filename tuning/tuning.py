@@ -84,7 +84,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             #first dimension: N X 128
             pred = clf(pair[0], pair[1]).cpu().tolist()  
             preds.extend(pred)
-            labels.extend([label]*pred.size()[0])
+            labels.extend([label]*len(pred))
                             
     pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
     ConfusionMatrixDisplay.from_predictions(labels, preds)
