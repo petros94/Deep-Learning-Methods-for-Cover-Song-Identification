@@ -33,7 +33,9 @@ class Threshold:
                 pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
                 
                 #first dimension: N X 128
+                print(pair[0].size())
                 first, second = model(pair[0]), model(pair[1])
+                print(first.size())
                 
                 distances = torch.norm(first - second)
                 print(distances.size())
