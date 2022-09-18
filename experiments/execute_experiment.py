@@ -5,13 +5,14 @@ import random
 import numpy as np
 from datasets.factory import make_dataset
 from datetime import datetime
+from models.classifier import ThresholdClassifier
 
 from models.factory import make_model
-from models.threshold import Threshold
 from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import get_device, split_songs
 from utils.prediction import distance
+from tuning.tuning import generate_ROC, generate_metrics
 import torch
 
 def execute_single(config_path: str = 'experiments/experiment_config.json'):
@@ -43,6 +44,10 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     print("Begin training")
     train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
     
-    print("Plot ROC")
-    tr = Threshold(0.5)
-    tr.generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    print("Plot ROC and calculate metrics")
+    generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    
+    clf = ThresholdClassifier(model, config['model']['threshold'])
+    generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    
+    
