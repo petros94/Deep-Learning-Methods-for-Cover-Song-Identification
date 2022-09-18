@@ -43,37 +43,9 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     print("Begin training")
     train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
     
-    print("Begin validation set testing")
-    valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=config['train']['batch_size'], shuffle=True, collate_fn=getattr(valid_set, "collate_fn", None))
-    model.eval()
-    device = get_device()
-    model.to(device)
-    output = torch.Tensor()
-    labels = []
-    with torch.no_grad():
-        for batch, (x, metadata) in enumerate(valid_dataloader):     
-        
-            # x: 3 x N x 1 x W x H
-            (anchor, pos, neg) = x 
-
-            anchor.to(device)
-            pos.to(device)
-            neg.to(device)
-            
-            pair, label = (anchor, pos), 1 if random.random() > 0.5 else (anchor, neg), 0
-            
-            #first dimension: N X 128
-            first, second = model(pair[0]), model(pair[1])
-            
-            distances = torch.norm(first - second)
-            output = torch.cat((output, distances))
-            labels.extend(label)
-            
-    output, labels = output.cpu().numpy(), np.array(labels)
-    print(len(output))
-    
+    print("Plot ROC")
     tr = Threshold(0.5)
-    tr.generate_ROC(output, labels)
+    tr.generate_ROC(model, valid_set, config['train']['batch_size'])
                 
 
 

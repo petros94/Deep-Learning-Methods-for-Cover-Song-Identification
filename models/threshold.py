@@ -1,6 +1,10 @@
 import numpy as np
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
+import torch
+import random
+
+from utils.generic import get_device
 
 class Threshold:
     def __init__(self, D) -> None:
@@ -9,7 +13,34 @@ class Threshold:
     def predict(self, distance):
         return distance < self.D
         
-    def generate_ROC(self, distances: np.array, labels: list):
+    def generate_ROC(self, model, data_set: torch.utils.data.Dataset, batch_size: int):
+        dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
+        model.eval()
+        device = get_device()
+        model.to(device)
+        output = torch.Tensor()
+        labels = []
+        with torch.no_grad():
+            for batch, (x, metadata) in enumerate(dataloader):     
+            
+                # x: 3 x N x 1 x W x H
+                (anchor, pos, neg) = x 
+
+                anchor.to(device)
+                pos.to(device)
+                neg.to(device)
+                
+                pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
+                
+                #first dimension: N X 128
+                first, second = model(pair[0]), model(pair[1])
+                
+                distances = torch.norm(first - second)
+                output = torch.cat((output, distances))
+                labels.extend(label)
+                
+        output, labels = output.cpu().numpy(), np.array(labels)
+        print(len(output))
         fpr, tpr, thresholds = roc_curve(labels, distances)
         roc_auc = auc(fpr, tpr)
         
