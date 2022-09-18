@@ -35,7 +35,7 @@ class Threshold:
                 #first dimension: N X 128
                 print(pair[0].size())
                 first, second = model(pair[0]), model(pair[1])
-                print(first.size())
+                print((first - second).size())
                 
                 distances = torch.norm(first - second)
                 print(distances.size())
