@@ -36,6 +36,7 @@ class Threshold:
                 first, second = model(pair[0]), model(pair[1])
                 
                 distances = torch.norm(first - second)
+                print(distances.size())
                 output.append(distances)
                 labels.extend([label]*batch_size)
                 
