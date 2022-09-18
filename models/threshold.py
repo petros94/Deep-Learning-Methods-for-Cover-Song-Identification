@@ -37,7 +37,7 @@ class Threshold:
                 
                 distances = torch.norm(first - second)
                 output.append(distances)
-                labels.extend(label)
+                labels.extend([label]*batch_size)
                 
         output, labels = torch.cat(output).cpu().numpy(), np.array(labels)
         print(len(output))
