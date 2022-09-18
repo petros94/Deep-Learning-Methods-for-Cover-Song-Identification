@@ -30,7 +30,7 @@ class Threshold:
                 pos.to(device)
                 neg.to(device)
                 
-                pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
+                pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
                 
                 #first dimension: N X 128
                 first, second = model(pair[0]), model(pair[1])
