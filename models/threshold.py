@@ -39,6 +39,9 @@ class Threshold:
                 output.append(distances)
                 labels.extend([label]*batch_size)
                 
+        print(len(output))
+        print(output[0].size())
+                
         output, labels = torch.cat(output).cpu().numpy(), np.array(labels)
         print(len(output))
         fpr, tpr, thresholds = roc_curve(labels, distances)
