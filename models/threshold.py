@@ -18,7 +18,7 @@ class Threshold:
         model.eval()
         device = get_device()
         model.to(device)
-        output = []
+        distances = []
         labels = []
         with torch.no_grad():
             for batch, (x, metadata) in enumerate(dataloader):     
@@ -33,21 +33,11 @@ class Threshold:
                 pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
                 
                 #first dimension: N X 128
-                print(pair[0].size())
-                first, second = model(pair[0]), model(pair[1])
-                print((first - second).size())
-                print(first-second)
-                
-                distances = torch.norm(first - second, dim=1)
-                print(distances.size())
-                output.append(distances)
+                first, second = model(pair[0]), model(pair[1])                
+                distances.append(torch.norm(first - second, dim=1))
                 labels.extend([label]*batch_size)
-                
-        print(len(output))
-        print(output[0].size())
-                
-        output, labels = torch.cat(output).cpu().numpy(), np.array(labels)
-        print(len(output))
+                                
+        distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
         fpr, tpr, thresholds = roc_curve(labels, distances)
         roc_auc = auc(fpr, tpr)
         
