@@ -45,4 +45,4 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     
     print("Plot ROC")
     tr = Threshold(0.5)
-    tr.generate_ROC(model, valid_set, config['train']['batch_size'])
+    tr.generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)

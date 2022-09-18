@@ -3,6 +3,7 @@ from sklearn.metrics import confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
 import torch
 import random
+import pandas as pd
 
 from utils.generic import get_device
 
@@ -13,7 +14,7 @@ class Threshold:
     def predict(self, distance):
         return distance < self.D
         
-    def generate_ROC(self, model, data_set: torch.utils.data.Dataset, batch_size: int):
+    def generate_ROC(self, model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
         dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
         model.eval()
         device = get_device()
@@ -58,5 +59,13 @@ class Threshold:
         plt.ylabel("True Positive Rate")
         plt.title("Receiver operating characteristic example")
         plt.legend(loc="lower right")
+        
+        if results_path:
+            df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
+            df.to_csv(results_path + '/thresholds.csv')
+            plt.savefig(results_path + '/roc.png')
+            
+            
         plt.show()
+        
             
