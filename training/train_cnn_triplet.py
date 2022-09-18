@@ -102,3 +102,7 @@ def train_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, p
                     
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}")
         print(f"Total train samples: {total_frames}")
+        
+    # Load best model
+    checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
+    model.load_state_dict(checkpoint['model_state_dict'])

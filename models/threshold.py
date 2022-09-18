@@ -18,7 +18,7 @@ class Threshold:
         model.eval()
         device = get_device()
         model.to(device)
-        output = torch.Tensor()
+        output = torch.Tensor().to(device)
         labels = []
         with torch.no_grad():
             for batch, (x, metadata) in enumerate(dataloader):     
@@ -36,7 +36,7 @@ class Threshold:
                 first, second = model(pair[0]), model(pair[1])
                 
                 distances = torch.norm(first - second)
-                output = torch.cat((output, distances))
+                output = torch.cat((output, distances)).to(device)
                 labels.extend(label)
                 
         output, labels = output.cpu().numpy(), np.array(labels)
