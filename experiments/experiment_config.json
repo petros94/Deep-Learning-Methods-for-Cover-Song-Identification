@@ -9,8 +9,7 @@
     ],
     "model": {
         "type": "resnet18",
-        "config_path": "models/resnet18/config.json",
-        "threshold": 5.7
+        "config_path": "models/resnet18/config.json"
     },
     "loss": "triplet",
     "features": {

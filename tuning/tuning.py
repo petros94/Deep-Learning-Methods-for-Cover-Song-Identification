@@ -59,9 +59,11 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
         fig.write_image(results_path + '/roc.png')
         
     fig.show()
+    return df
             
 
 def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
+    print(f"Classifier threshold: {clf.D}")
     dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
     clf.eval()
     device = get_device()

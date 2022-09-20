@@ -45,9 +45,14 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
     
     print("Plot ROC and calculate metrics")
-    generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    roc_stats = generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
     
-    clf = ThresholdClassifier(model, config['model']['threshold'])
+    try:
+        thr = config['model']['threshold']
+    except KeyError:
+        thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'tpr'].iloc[0]
+    
+    clf = ThresholdClassifier(model, thr)
     generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
     
     
