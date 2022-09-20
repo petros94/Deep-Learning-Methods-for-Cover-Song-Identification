@@ -62,5 +62,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         
     with open(res_dir_name + '/report.html', 'w') as f:
         f.write(report_html)
+        
+    return res_dir_name, chk_dir_name
     
     
