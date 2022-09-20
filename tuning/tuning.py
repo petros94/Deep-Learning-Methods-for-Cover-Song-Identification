@@ -42,7 +42,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
         x='fpr', y='tpr',
         title=f'ROC Curve (AUC={roc_auc:.4f})',
         labels=dict(x='False Positive Rate', y='True Positive Rate'),
-        hover_data=['thresholds'],
+        hover_data=['thr'],
         width=700, height=500
     )
     fig.add_shape(
