@@ -54,6 +54,8 @@ def load_songs_covers1000(songs_dir="mfccs/", feature="mfcc"):
     songs = {}
     if feature == "mfcc":
         feature = 'XMFCC'
+    elif feature == "hpcp":
+        feature = 'XHPCP'
 
     for dir in entries:
         subdir = os.listdir(origin_path + dir)
