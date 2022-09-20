@@ -3,7 +3,7 @@ import torch
 
 class ThresholdClassifier(nn.Module):
     def __init__(self, model, D) -> None:
-        super(ThresholdClassifier, self).__init__()
+        super().__init__()
         self.D = D
         self.model = model
         

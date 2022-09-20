@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, precision_recall_fscore_support
 import plotly.express as px
+import matplotlib.pyplot as plt
 import torch
 import random
 import pandas as pd
