@@ -28,6 +28,8 @@ def sample_songs(songs, n_samples):
     """
     if n_samples >= len(songs.keys()):
         print(f"n_samples exceeds dataset size of: {len(songs.keys())}. Full dataset will be used.")
+        return songs
+    
     return {k: songs[k] for k in random.sample(sorted(songs.keys()), n_samples)}
 
 def split_songs(songs, train_perc=0.8):
