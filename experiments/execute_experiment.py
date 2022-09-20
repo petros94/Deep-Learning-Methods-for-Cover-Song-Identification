@@ -53,14 +53,12 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
-    pr, rec, f1, sup = generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    df = generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
     
     with open('results/template.html') as f:
         report_html = f.read()
         report_html = report_html.replace('__DATA__', json.dumps(config))
-        report_html = report_html.replace('__PRE__', pr)
-        report_html = report_html.replace('__REC__', rec)
-        report_html = report_html.replace('__F1__', f1)
+        report_html = report_html.replace('__TABLE__', df.to_html())
         
     with open(res_dir_name + '/report.html', 'w') as f:
         f.write(report_html)
