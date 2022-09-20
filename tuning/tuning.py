@@ -52,8 +52,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
 
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     fig.update_xaxes(constrain='domain')
-    fig.show()
-    
+        
     if results_path:
         df.to_csv(results_path + '/thresholds.csv')
         fig.write_image(results_path + '/roc.png')
