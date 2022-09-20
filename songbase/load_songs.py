@@ -64,7 +64,7 @@ def load_songs_covers1000(songs_dir="mfccs/", feature="mfcc"):
             song_id = dir
             cover_id = song.split("_")[0]
             mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-            print(mat.keys()
+            print(mat.keys())
             repr = mat[feature]
             repr = np.array(repr)
             repr = (repr - np.mean(repr)) / np.std(repr)
