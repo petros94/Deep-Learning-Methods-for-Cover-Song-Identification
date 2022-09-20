@@ -50,7 +50,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     try:
         thr = config['model']['threshold']
     except KeyError:
-        thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'tpr'].iloc[0]
+        thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
     generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
