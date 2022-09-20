@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>JSON Test</title>
+</head>
+
+<body>
+    <h2>Configuration</h2>
+    <pre id="myData"></pre>
+    <br />
+    <br />
+    <h2>ROC curve and Confusion Matrix</h2>
+    <img src="roc.png" width="600" height="600">
+    <br />
+    <img src="confusion.png" width="600" height="600">
+    <br />
+    <br />
+    <p>Precision: __PRE__</p>
+    <p>Recall: __REC__</p>
+    <p>F1: __F1__</p>
+    <script>
+        data = __DATA__;
+        appendData(data);
+        function appendData(data) {
+            document.getElementById("myData").textContent = JSON.stringify(data, undefined, 2);
+        }
+    </script>
+</body>
+
+</html>
