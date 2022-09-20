@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, precision_recall_fscore_support
-import matplotlib.pyplot as plt
+import plotly.express as px
 import torch
 import random
 import pandas as pd
@@ -34,33 +34,32 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
                             
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
     fpr, tpr, thresholds = roc_curve(labels, distances)
+    df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
     roc_auc = auc(fpr, tpr)
     
-    plt.figure()
-    lw = 2
-    plt.plot(
-        fpr,
-        tpr,
-        color="darkorange",
-        lw=lw,
-        label="ROC curve (area = %0.2f)" % roc_auc,
+    fig = px.area(
+        data_frame=df,
+        x='fpr', y='tpr',
+        title=f'ROC Curve (AUC={roc_auc:.4f})',
+        labels=dict(x='False Positive Rate', y='True Positive Rate'),
+        hover_data=['thresholds'],
+        width=700, height=500
     )
-    plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("Receiver operating characteristic example")
-    plt.legend(loc="lower right")
+    fig.add_shape(
+        type='line', line=dict(dash='dash'),
+        x0=0, x1=1, y0=0, y1=1
+    )
+
+    fig.update_yaxes(scaleanchor="x", scaleratio=1)
+    fig.update_xaxes(constrain='domain')
+    fig.show()
     
     if results_path:
-        df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
         df.to_csv(results_path + '/thresholds.csv')
-        plt.savefig(results_path + '/roc.png')
+        fig.write_image(results_path + '/roc.png')
         
-        
-    plt.show()
-    
+    fig.show()
+            
 
 def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
     dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
