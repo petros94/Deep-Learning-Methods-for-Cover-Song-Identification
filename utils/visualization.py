@@ -3,6 +3,7 @@
 Visualization Utils
 '''
 
+import numpy as np
 import plotly.express as px
 import time
 from sklearn.decomposition import TruncatedSVD

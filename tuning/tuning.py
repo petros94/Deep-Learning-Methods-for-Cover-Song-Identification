@@ -80,7 +80,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             pos.to(device)
             neg.to(device)
             
-            pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
+            pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
             
             #first dimension: N X 128
             pred = clf(pair[0], pair[1]).cpu().tolist()  
