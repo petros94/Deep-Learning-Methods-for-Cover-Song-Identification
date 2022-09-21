@@ -11,4 +11,5 @@ class ThresholdClassifier(nn.Module):
         out1 = self.model(x1)
         out2 = self.model(x2)
         dist = torch.norm(out1 - out2, dim=1)
-        return (dist < self.D)*1
+        inv = 1/dist
+        return (inv > self.D)*1
