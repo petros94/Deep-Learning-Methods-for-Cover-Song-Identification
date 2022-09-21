@@ -34,7 +34,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             labels.extend([label]*dist.size()[0])
                             
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
-    fpr, tpr, thresholds = roc_curve(labels, distances)
+    fpr, tpr, thresholds = roc_curve(labels, distances, pos_label=0)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
     roc_auc = auc(fpr, tpr)
     
@@ -87,7 +87,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             preds.extend(pred)
             labels.extend([label]*len(pred))
                             
-    pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
+    pr, rec, f1, sup = precision_recall_fscore_support(labels, preds, pos_label=0)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
     ConfusionMatrixDisplay.from_predictions(y_true=labels, y_pred=preds)
     
