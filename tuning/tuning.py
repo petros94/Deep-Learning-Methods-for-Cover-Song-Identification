@@ -89,7 +89,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
                             
     pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
-    ConfusionMatrixDisplay.from_predictions(labels, preds)
+    ConfusionMatrixDisplay.from_predictions(y_true=labels, y_pred=preds)
     
     if results_path:
         df.to_csv(results_path + '/metrics.csv')
