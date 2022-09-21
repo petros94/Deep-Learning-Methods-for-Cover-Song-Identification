@@ -25,7 +25,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             pos.to(device)
             neg.to(device)
             
-            pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
+            pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
             
             #first dimension: N X 128
             first, second = model(pair[0]), model(pair[1])  
@@ -34,7 +34,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             labels.extend([label]*dist.size()[0])
                             
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
-    fpr, tpr, thresholds = roc_curve(labels, distances, pos_label=0)
+    fpr, tpr, thresholds = roc_curve(labels, 1/distances)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
     roc_auc = auc(fpr, tpr)
     
@@ -80,16 +80,16 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             pos.to(device)
             neg.to(device)
             
-            pair, label = ((anchor, pos), 0) if random.random() > 0.5 else ((anchor, neg), 1)
+            pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
             
             #first dimension: N X 128
             pred = clf(pair[0], pair[1]).cpu().tolist()  
             preds.extend(pred)
             labels.extend([label]*len(pred))
                             
-    pr, rec, f1, sup = precision_recall_fscore_support(labels, preds, pos_label=0)
+    pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
-    ConfusionMatrixDisplay.from_predictions(y_true=labels, y_pred=preds)
+    ConfusionMatrixDisplay.from_predictions(labels, preds)
     
     if results_path:
         df.to_csv(results_path + '/metrics.csv')
