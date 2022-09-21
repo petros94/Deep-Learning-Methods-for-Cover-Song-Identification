@@ -10,7 +10,7 @@
     "model": {
         "type": "cnn",
         "config_path": "models/cnn/config.json",
-        "checkpoint_path": null
+        "checkpoint_path": "checkpoints/example_model"
     },
     "loss": "triplet",
     "features": {
