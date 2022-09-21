@@ -1,8 +1,9 @@
 import json
 from models.resnet18.ResNet18 import from_config as make_resnet
+from models.cnn.cnn import from_config as make_cnn
 import json
 
-AVAILABLE_TYPES = ["resnet18"]
+AVAILABLE_TYPES = ["resnet18", "cnn"]
 
 def make_model(config_path: str = 'models/config.json'):
     """Factory to generate models from configuration
@@ -25,3 +26,5 @@ def make_model(config_path: str = 'models/config.json'):
     
     if config['model']['type'] == "resnet18":
         return make_resnet(config_path=config['model']['config_path'])
+    elif config['model']['type'] == "cnn":
+        return make_cnn(config_path=config['model']['config_path'])
