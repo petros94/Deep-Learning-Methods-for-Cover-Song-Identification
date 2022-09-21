@@ -33,7 +33,6 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             distances.append(dist)
             labels.extend([label]*dist.size()[0])
                             
-    print(first.size(), dist.size())
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
     fpr, tpr, thresholds = roc_curve(labels, distances)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})

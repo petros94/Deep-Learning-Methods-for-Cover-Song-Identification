@@ -43,7 +43,11 @@ class CNN(nn.Module):
         return nn.Sequential(*modules_conv)
     
     def forward(self, x):
+        batch_size, feature_size = x.size(0), self.channels[-1]
         out = self.features(x)
+        
+        # squeeze last dimensions
+        out = out.view(batch_size, feature_size)
         return out
     
 def from_config(config_path: str):
