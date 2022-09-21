@@ -33,6 +33,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             distances.append(dist)
             labels.extend([label]*dist.size()[0])
                             
+    print(first.size(), dist.size())
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
     fpr, tpr, thresholds = roc_curve(labels, distances)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
@@ -86,7 +87,6 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             pred = clf(pair[0], pair[1]).cpu().tolist()  
             preds.extend(pred)
             labels.extend([label]*len(pred))
-    print(pred.size())
                             
     pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
