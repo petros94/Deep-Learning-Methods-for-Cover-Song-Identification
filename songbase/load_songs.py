@@ -40,12 +40,13 @@ def load_songs(type="covers1000", songs_dir="mfccs/", feature="mfcc"):
     }
     
     Arguments:
-        type: ["covers1000"] the dataset type
+        type: ["covers1000", "covers80"] the dataset type
     """
     if type == "covers1000":
         return load_songs_covers1000(songs_dir, feature)
+    elif type == "covers80":
     else:
-        raise ValueError("'type' must be one of ['covers1000']")
+        raise ValueError("'type' must be one of ['covers1000', 'covers80']")
 
 def load_songs_covers1000(songs_dir="mfccs/", feature="mfcc"):
     origin_path = songs_dir
@@ -67,5 +68,26 @@ def load_songs_covers1000(songs_dir="mfccs/", feature="mfcc"):
             repr = mat[feature]
             repr = np.array(repr)
             repr = (repr - np.mean(repr)) / np.std(repr)
+            songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+    return songs
+
+def load_songs_covers80(songs_dir="hpcps80/", feature="hpcp"):
+    origin_path = songs_dir
+    entries = os.listdir(origin_path)
+    
+    songs = {}
+    if feature == "mfcc":
+        feature = 'XMFCC'
+    elif feature == "hpcp":
+        feature = 'XHPCP'
+
+    for dir in entries:
+        subdir = os.listdir(origin_path + dir)
+        songs[dir] = []
+        for song in subdir:
+            song_id = dir
+            cover_id = song
+            mat = scipy.io.loadmat(origin_path + dir + "/" + song)
+            repr = mat[feature] # No need to normalize since already normalized
             songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
     return songs
