@@ -31,9 +31,9 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     os.mkdir(res_dir_name)
         
     print("Loading songs")
-    songs = from_config(config_path=config_path)
+    train_songs, test_songs = from_config(config_path=config_path)
     
-    train_songs, valid_songs = split_songs(songs, config['train']['train_perc'])
+    train_songs, valid_songs = split_songs(train_songs, config['train']['train_perc'])
     
     train_set = make_dataset(train_songs, config_path=config_path)
     valid_set = make_dataset(valid_songs, config_path=config_path)
@@ -53,7 +53,14 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
-    df = generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    
+    if len(test_songs) > 0:
+        test_set = make_dataset(test_songs, config_path=config_path)
+    else:
+        print("No test set provided, validation set will be used")
+        test_set = valid_set
+        
+    df = generate_metrics(clf, test_set, config['train']['batch_size'], results_path=res_dir_name)
     
     with open('results/template.html') as f:
         report_html = f.read()
@@ -75,14 +82,14 @@ def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
     os.mkdir(res_dir_name)
         
     print("Loading songs")
-    songs = from_config(config_path=config_path)
-    valid_set = make_dataset(songs, config_path=config_path)
-    print("Created eval set: {} samples".format(len(valid_set)))
+    _, test_songs = from_config(config_path=config_path)
+    test_songs = make_dataset(test_songs, config_path=config_path)
+    print("Created eval set: {} samples".format(len(test_songs)))
     
     model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
-    roc_stats = generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    roc_stats = generate_ROC(model, test_songs, config['train']['batch_size'], results_path=res_dir_name)
     
     try:
         thr = config['model']['threshold']
@@ -90,7 +97,7 @@ def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
         thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
-    df = generate_metrics(clf, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    df = generate_metrics(clf, test_songs, config['train']['batch_size'], results_path=res_dir_name)
     
     with open('results/template.html') as f:
         report_html = f.read()

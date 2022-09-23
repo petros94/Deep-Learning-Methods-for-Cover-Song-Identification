@@ -12,15 +12,23 @@ def from_config(config_path: str = 'songbase/config.json'):
     with open(config_path, "r") as f:
         config = json.load(f)
         
-    ret = {}
-    for dataset in config['datasets']:
+    train_songs = {}
+    for dataset in config['train_datasets']:
         songs = load_songs(type=dataset['type'], 
                             songs_dir=dataset['path'], 
                             feature=config['representation'])
         songs = sample_songs(songs, n_samples=dataset['n_samples'])
-        ret.update(songs)
+        train_songs.update(songs)
         
-    return ret
+    test_songs = {}
+    for dataset in config['test_datasets']:
+        songs = load_songs(type=dataset['type'], 
+                            songs_dir=dataset['path'], 
+                            feature=config['representation'])
+        songs = sample_songs(songs, n_samples=dataset['n_samples'])
+        test_songs.update(songs)
+        
+    return train_songs, test_songs
          
 
 def load_songs(type="covers1000", songs_dir="mfccs/", feature="mfcc"):
@@ -45,6 +53,7 @@ def load_songs(type="covers1000", songs_dir="mfccs/", feature="mfcc"):
     if type == "covers1000":
         return load_songs_covers1000(songs_dir, feature)
     elif type == "covers80":
+        return load_songs_covers80(songs_dir, feature)
     else:
         raise ValueError("'type' must be one of ['covers1000', 'covers80']")
 

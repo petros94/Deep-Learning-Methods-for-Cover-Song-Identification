@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, precision_recall_fscore_support
+from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, precision_recall_fscore_support, accuracy_score
 import plotly.express as px
 import matplotlib.pyplot as plt
 import torch
@@ -88,6 +88,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             labels.extend([label]*len(pred))
                             
     pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
+    acc = accuracy_score(labels, preds)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
     ConfusionMatrixDisplay.from_predictions(labels, preds)
     
@@ -95,6 +96,8 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
         df.to_csv(results_path + '/metrics.csv')
         plt.savefig(results_path + '/confusion.png')
         
+    print(f'Accuracy is: {acc}')
+    print(df)
     plt.show()
     return df
         
