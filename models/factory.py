@@ -2,6 +2,7 @@ import json
 from models.resnet18.ResNet18 import from_config as make_resnet
 from models.cnn.cnn import from_config as make_cnn
 import torch
+from utils.generic import get_device
 
 
 AVAILABLE_TYPES = ["resnet18", "cnn"]
@@ -31,7 +32,8 @@ def make_model(config_path: str = 'models/config.json'):
         model = make_cnn(config_path=config['model']['config_path'])
         
     if config['model']['checkpoint_path'] is not None:
-        chk = torch.load(config['model']['checkpoint_path'])
+        loc = get_device()
+        chk = torch.load(config['model']['checkpoint_path'], map_location=torch.device(loc)) 
         
         model.load_state_dict(chk['model_state_dict'])
         epoch = chk['epoch']
