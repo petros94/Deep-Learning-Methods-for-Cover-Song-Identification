@@ -1,0 +1,41 @@
+{
+    "representation": "hpcp",
+    "train_datasets": [
+        {
+            "type": "covers1000",
+            "path": "/content/hpcps/",
+            "n_samples": 1000
+        }
+    ],
+    "test_datasets": [
+        {
+            "type": "covers80",
+            "path": "/content/hpcps80/content/hpcps80/",
+            "n_samples": 1000
+        }
+    ],
+    "model": {
+        "type": "cnn",
+        "config_path": "models/cnn/config.json",
+        "checkpoint_path": null
+    },
+    "loss": "hard_triplet",
+    "features": {
+        "n_batches": 256,
+        "songs_per_batch": 64,
+        "input": "hpcp",
+        "frame_size": 1400,
+        "scale": [
+            1,
+            0.33
+        ]
+    },
+    "train": {
+        "train_perc": 0.8,
+        "n_epochs": 6,
+        "lr": 5e-4,
+        "patience": 6,
+        "checkpoints_path": "checkpoints/",
+        "results_path": "results/"
+    }
+}
