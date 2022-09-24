@@ -51,7 +51,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         test_set = valid_set
         
     print("Plot ROC and calculate metrics")
-    roc_stats = generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
+    roc_stats = generate_ROC(model, test_set, config['train']['batch_size'], results_path=res_dir_name)
     
     try:
         thr = config['model']['threshold']
