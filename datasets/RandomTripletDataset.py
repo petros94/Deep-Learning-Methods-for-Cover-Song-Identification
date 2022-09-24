@@ -4,6 +4,7 @@ from utils.generic import generate_triplets, get_device, retrieve_repr, repr_tri
 
 class RandomTripletDataset(torch.utils.data.Dataset):
     def __init__(self, songs, samples_per_song=10, frame_size=400, scale=(1, 0.33)):
+        print("Creating random triplet set")
         self.triplets = generate_triplets(songs, samples_per_song)
         self.songs = songs
         self.samples_per_song = samples_per_song
