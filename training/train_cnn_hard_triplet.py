@@ -27,7 +27,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
         total_frames = 0
         model.train()
 
-        for i in len(train_set):
+        for i in range(len(train_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = train_set[i]
             
@@ -49,7 +49,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for i in len(valid_set):
+                for i in range(len(valid_set)):
                     # N X 1 X num_feats X num_samples, N
                     (data, labels) = train_set[i]     
                 
