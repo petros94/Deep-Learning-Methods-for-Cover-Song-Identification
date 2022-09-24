@@ -44,6 +44,12 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     print("Begin training")
     train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
     
+    if len(test_songs) > 0:
+        test_set = make_dataset(test_songs, config_path=config_path)
+    else:
+        print("No test set provided, validation set will be used")
+        test_set = valid_set
+        
     print("Plot ROC and calculate metrics")
     roc_stats = generate_ROC(model, valid_set, config['train']['batch_size'], results_path=res_dir_name)
     
@@ -53,12 +59,6 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
-    
-    if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path)
-    else:
-        print("No test set provided, validation set will be used")
-        test_set = valid_set
         
     df = generate_metrics(clf, test_set, config['train']['batch_size'], results_path=res_dir_name)
     

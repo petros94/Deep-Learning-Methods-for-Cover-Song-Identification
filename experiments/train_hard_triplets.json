@@ -33,6 +33,7 @@
     "train": {
         "train_perc": 0.8,
         "n_epochs": 6,
+        "batch_size": 4,
         "lr": 5e-4,
         "patience": 6,
         "checkpoints_path": "checkpoints/",
