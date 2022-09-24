@@ -1,6 +1,7 @@
 import imp
 import torch
 import random
+import numpy as np
 from utils.generic import generate_triplets, get_device, retrieve_repr, repr_triplet_2_segments, frame_idx_2_time, sample_songs, segment_and_scale
 
 class HardTripletDataset(torch.utils.data.Dataset):
@@ -49,6 +50,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
                 
             # Samples are now a tensor of size P*K X 1 X num_features X frame_size
             samples = torch.cat(samples)
+            labels = np.array(labels)
             
             assert samples.dim() == 4
             
