@@ -24,7 +24,6 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
         print(32*"=")
         print(f"Epoch {epoch}")
         epoch_loss = 0
-        total_frames = 0
         model.train()
 
         for i in range(len(train_set)):
