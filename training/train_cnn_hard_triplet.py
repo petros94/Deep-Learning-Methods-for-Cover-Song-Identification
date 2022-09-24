@@ -30,6 +30,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
         for i in range(len(train_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = train_set[i]
+            data = data.to(device)
             
             optimizer.zero_grad()
             embeddings = model(data)
@@ -52,6 +53,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 for i in range(len(valid_set)):
                     # N X 1 X num_feats X num_samples, N
                     (data, labels) = train_set[i]     
+                    data = data.to(device)
                 
 
                     embeddings = model(data)
