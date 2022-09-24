@@ -1,4 +1,5 @@
 import imp
+from typing import Mapping
 import torch
 import random
 import numpy as np
@@ -15,6 +16,8 @@ class HardTripletDataset(torch.utils.data.Dataset):
         }
         """
         song_segs = {}
+        self.int_mapping = {k: i for i,k in enumerate(list(songs.keys()))}
+        
         for song_id, covers in songs.items():
             segs = []
             for cover in covers:
@@ -45,7 +48,10 @@ class HardTripletDataset(torch.utils.data.Dataset):
             for song_id in P:
                 K = random.choice(song_segs[song_id]) #Select a random part of the songs
                 samples.append(K)
-                labels.extend([song_id]*K.size(0))
+                
+                int_label = self.int_mapping[song_id]
+                
+                labels.extend([int_label]*K.size(0))
                 self.total_samples += K.size(0)
                 
             # Samples are now a tensor of size P*K X 1 X num_features X frame_size
