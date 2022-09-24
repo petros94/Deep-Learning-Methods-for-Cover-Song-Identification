@@ -2,7 +2,7 @@ import imp
 import torch
 from utils.generic import generate_triplets, get_device, retrieve_repr, repr_triplet_2_segments, frame_idx_2_time
 
-class TripletDataset(torch.utils.data.Dataset):
+class RandomTripletDataset(torch.utils.data.Dataset):
     def __init__(self, songs, samples_per_song=10, frame_size=400, scale=(1, 0.33)):
         self.triplets = generate_triplets(songs, samples_per_song)
         self.songs = songs

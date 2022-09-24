@@ -2,7 +2,7 @@ from dataclasses import make_dataclass
 
 import json
 
-from datasets.TripletDataset import TripletDataset
+from datasets.RandomTripletDataset import RandomTripletDataset
 
 AVAILABLE_TYPES = ["triplet"]
 
@@ -14,7 +14,7 @@ def make_dataset(songs: dict, config_path: str):
         raise ValueError("Invalid type")
     
     if config['loss'] == 'triplet':
-        return TripletDataset(songs, 
+        return RandomTripletDataset(songs, 
                               samples_per_song=config['features']['samples_per_song'], 
                               frame_size=config['features']['frame_size'],
                               scale=config['features']['scale'])
