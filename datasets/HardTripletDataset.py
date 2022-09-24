@@ -7,6 +7,7 @@ from utils.generic import generate_triplets, get_device, retrieve_repr, repr_tri
 
 class HardTripletDataset(torch.utils.data.Dataset):
     def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33)):
+        print("Creating HardTripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
         
