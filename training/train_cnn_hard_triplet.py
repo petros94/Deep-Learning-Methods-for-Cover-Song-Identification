@@ -57,20 +57,31 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for batch, (x, metadata) in enumerate(valid_dataloader):     
+                for i in range(len(valid_set)):
+                    # N X 1 X num_feats X num_samples, N
+                    (data, labels) = valid_set[i]
+                    data = data.to(device)
+                    
+                    embeddings = model(data)
+                    hard_pairs = miner(embeddings, labels)
                 
-                    (anchor, pos, neg) = x 
-
-                    anchor.to(device)
-                    pos.to(device)
-                    neg.to(device)
-
-                    anchor_out = model(anchor)
-                    pos_out = model(pos)
-                    neg_out = model(neg)
-
-                    loss = criterion(anchor_out, pos_out, neg_out)
+                    loss = loss_func(embeddings, labels, hard_pairs)
                     valid_loss += loss.item()
+                    
+                # for batch, (x, metadata) in enumerate(valid_dataloader):     
+                
+                #     (anchor, pos, neg) = x 
+
+                #     anchor.to(device)
+                #     pos.to(device)
+                #     neg.to(device)
+
+                #     anchor_out = model(anchor)
+                #     pos_out = model(pos)
+                #     neg_out = model(neg)
+
+                #     loss = criterion(anchor_out, pos_out, neg_out)
+                #     valid_loss += loss.item()
                     
                 if valid_loss < best_loss:
                     print("New best random loss, saving model")
