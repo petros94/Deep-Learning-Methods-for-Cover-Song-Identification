@@ -5,7 +5,7 @@ from utils.generic import get_device
 
 from pytorch_metric_learning import miners, losses, reducers
 
-def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path, second_valid_set):
+def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
     device = get_device()
     model.train()
@@ -13,20 +13,20 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     reducer = reducers.ThresholdReducer(low=0)
-    hard_miner = miners.TripletMarginMiner(margin=1.00, type_of_triplets="semihard")
-    loss_func = losses.TripletMarginLoss(margin=1.00, reducer=reducer)
-    miner = hard_miner
+    margin = 1.00
+    batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
+    batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
+    loss_func = losses.TripletMarginLoss(margin=margin, reducer=reducer)
+    miner = batch_all_miner
     
-    if second_valid_set is not None:
-        criterion = torch.nn.TripletMarginLoss()
-        collate_fn_test = getattr(second_valid_set, "collate_fn", None)
-        random_triplet_valid_dataloader = torch.utils.data.DataLoader(second_valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_test)
+    criterion = torch.nn.TripletMarginLoss()
+    collate_fn_test = getattr(valid_set, "collate_fn", None)
+    valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_test)
 
     train_batches = len(train_set)
     valid_batches = len(valid_set)
     
     best_loss = 1000000
-    best_rand_loss = 1000000
     current_patience = 0
     for epoch in range(n_epochs):
         print(32*"=")
@@ -57,78 +57,41 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for i in range(len(valid_set)):
-                    # N X 1 X num_feats X num_samples, N
-                    (data, labels) = train_set[i]     
-                    data = data.to(device)
+                for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
+                    (anchor, pos, neg) = x 
 
-                    embeddings = model(data)
-                    hard_pairs = miner(embeddings, labels)
-                
-                    loss = loss_func(embeddings, labels, hard_pairs)
+                    anchor.to(device)
+                    pos.to(device)
+                    neg.to(device)
+
+                    anchor_out = model(anchor)
+                    pos_out = model(pos)
+                    neg_out = model(neg)
+
+                    loss = criterion(anchor_out, pos_out, neg_out)
                     valid_loss += loss.item()
-            
-                print(f"Epoch {epoch} valid loss: {valid_loss/valid_batches}")
+                    
                 if valid_loss < best_loss:
-                    print("New best valid loss")
+                    print("New best random loss, saving model")
                     best_loss = valid_loss
-                    # current_patience = 0
+                    current_patience = 0
+                
+                    # Export best model checkpoint
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'loss': valid_loss/valid_batches,
+                        }, checkpoints_path + "/checkpoint.tar")
+                
+                    # Save results
+                    with open(results_path + '/train_results.json', "w") as f:
+                        json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+                else:
+                    current_patience +=1
                     
-                #     # Export best model checkpoint
-                #     torch.save({
-                #         'epoch': epoch,
-                #         'model_state_dict': model.state_dict(),
-                #         'optimizer_state_dict': optimizer.state_dict(),
-                #         'loss': valid_loss/valid_batches,
-                #         }, checkpoints_path + "/checkpoint.tar")
-                    
-                #     # Save results
-                #     with open(results_path + '/train_results.json', "w") as f:
-                #         json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
-                # else:
-                #     current_patience +=1
-                    
-            # Evaluate on random triplets
-            if second_valid_set is not None:
-                random_valid_batches = int(len(second_valid_set)/batch_size)
-                valid_loss=0
-                with torch.no_grad():
-                    for batch, (x, metadata) in enumerate(random_triplet_valid_dataloader):     
-                    
-                        (anchor, pos, neg) = x 
-
-                        anchor.to(device)
-                        pos.to(device)
-                        neg.to(device)
-
-                        anchor_out = model(anchor)
-                        pos_out = model(pos)
-                        neg_out = model(neg)
-
-                        loss = criterion(anchor_out, pos_out, neg_out)
-                        valid_loss += loss.item()
-                        
-                    if valid_loss < best_rand_loss:
-                        print("New best random loss, saving model")
-                        best_rand_loss = valid_loss
-                        current_patience = 0
-                    
-                        # Export best model checkpoint
-                        torch.save({
-                            'epoch': epoch,
-                            'model_state_dict': model.state_dict(),
-                            'optimizer_state_dict': optimizer.state_dict(),
-                            'loss': valid_loss/valid_batches,
-                            }, checkpoints_path + "/checkpoint.tar")
-                    
-                        # Save results
-                        with open(results_path + '/train_results.json', "w") as f:
-                            json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
-                    else:
-                        current_patience +=1
-                    
-                print(f"Epoch {epoch} random triplet valid loss: {valid_loss/random_valid_batches}")
+                print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
                 
                 
         if current_patience == patience:
