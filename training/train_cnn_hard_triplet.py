@@ -16,8 +16,9 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     distance = distances.LpDistance(normalize_embeddings=False)
     batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard", distance=distance)
     batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all", distance=distance)
+    batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
-    miner = batch_all_miner
+    miner = batch_hard_miner
     
     criterion = torch.nn.TripletMarginLoss()
     collate_fn_test = getattr(valid_set, "collate_fn", None)
@@ -60,31 +61,31 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for i in range(len(valid_set)):
-                    # N X 1 X num_feats X num_samples, N
-                    (data, labels) = valid_set[i]
-                    data = data.to(device)
+                # for i in range(len(valid_set)):
+                #     # N X 1 X num_feats X num_samples, N
+                #     (data, labels) = valid_set[i]
+                #     data = data.to(device)
                     
-                    embeddings = model(data)
-                    hard_pairs = miner(embeddings, labels)
+                #     embeddings = model(data)
+                #     hard_pairs = miner(embeddings, labels)
                 
-                    loss = loss_func(embeddings, labels, hard_pairs)
-                    valid_loss += loss.item()
-                    
-                # for batch, (x, metadata) in enumerate(valid_dataloader):     
-                
-                #     (anchor, pos, neg) = x 
-
-                #     anchor.to(device)
-                #     pos.to(device)
-                #     neg.to(device)
-
-                #     anchor_out = model(anchor)
-                #     pos_out = model(pos)
-                #     neg_out = model(neg)
-
-                #     loss = criterion(anchor_out, pos_out, neg_out)
+                #     loss = loss_func(embeddings, labels, hard_pairs)
                 #     valid_loss += loss.item()
+                    
+                for batch, (x, metadata) in enumerate(valid_dataloader):     
+                
+                    (anchor, pos, neg) = x 
+
+                    anchor.to(device)
+                    pos.to(device)
+                    neg.to(device)
+
+                    anchor_out = model(anchor)
+                    pos_out = model(pos)
+                    neg_out = model(neg)
+
+                    loss = criterion(anchor_out, pos_out, neg_out)
+                    valid_loss += loss.item()
                     
                 if valid_loss < best_loss:
                     print("New best random loss, saving model")
