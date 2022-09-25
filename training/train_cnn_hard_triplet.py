@@ -28,6 +28,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     best_loss = 1000000
     current_patience = 0
     for epoch in range(n_epochs):
+        mean_triplets = 0
         print(32*"=")
         print(f"Epoch {epoch}")
         epoch_loss = 0
@@ -50,6 +51,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             epoch_loss += loss.item()
 
             if i%16==0:
+                mean_triplets += miner.num_triplets
                 print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
         if epoch%1==0:
@@ -109,7 +111,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             print(f"No further improvement after {patience} epochs, breaking.")
             break
                     
-        print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}")
+        print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}, mean triplets: {int(float(mean_triplets)/train_batches)}, perf score: {epoch_loss*int(float(mean_triplets)/train_batches)}")
         
     # Load best model
     checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
