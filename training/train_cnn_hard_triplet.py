@@ -14,10 +14,10 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     reducer = reducers.ThresholdReducer(low=0)
     margin = 1.00
-    batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
+    batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard")
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
     loss_func = losses.TripletMarginLoss(margin=margin, reducer=reducer)
-    miner = batch_all_miner
+    miner = batch_semihard_miner
     
     criterion = torch.nn.TripletMarginLoss()
     collate_fn_test = getattr(valid_set, "collate_fn", None)
