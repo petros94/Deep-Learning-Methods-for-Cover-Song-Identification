@@ -5,7 +5,7 @@ from utils.generic import get_device
 
 from pytorch_metric_learning import miners, losses
 
-def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, lr, checkpoints_path, results_path):
+def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path, second_valid_set):
 
     device = get_device()
     model.train()
@@ -13,7 +13,12 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     miner = miners.BatchHardMiner()
-    loss_func = losses.TripletMarginLoss()
+    loss_func = losses.TripletMarginLoss(margin=1.00)
+    
+    if second_valid_set is not None:
+        criterion = torch.nn.TripletMarginLoss()
+        collate_fn_test = getattr(second_valid_set, "collate_fn", None)
+        random_triplet_valid_dataloader = torch.utils.data.DataLoader(second_valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_test)
 
     train_batches = len(train_set)
     valid_batches = len(valid_set)
@@ -80,6 +85,27 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                         json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
                 else:
                     current_patience +=1
+                    
+            # Evaluate on random triplets
+            if second_valid_set is not None:
+                random_valid_batches = int(len(second_valid_set)/batch_size)
+                valid_loss=0
+                with torch.no_grad():
+                    for batch, (x, metadata) in enumerate(random_triplet_valid_dataloader):     
+                    
+                        (anchor, pos, neg) = x 
+
+                        anchor.to(device)
+                        pos.to(device)
+                        neg.to(device)
+
+                        anchor_out = model(anchor)
+                        pos_out = model(pos)
+                        neg_out = model(neg)
+
+                        loss = criterion(anchor_out, pos_out, neg_out)
+                        valid_loss += loss.item()
+                print(f"Epoch {epoch} random triplet valid loss: {valid_loss/random_valid_batches}")
                 
                 
         if current_patience == patience:

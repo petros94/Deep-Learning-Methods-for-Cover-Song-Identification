@@ -22,7 +22,7 @@ def retrieve_repr(songs, song_id, cover_id) -> np.array:
             return s["repr"]
 
 
-def sample_songs(songs, n_samples):
+def sample_songs(songs, n_samples, ):
     """
     Return a subset of the songs dict, retured by load_songs()
     """
@@ -30,7 +30,8 @@ def sample_songs(songs, n_samples):
         print(f"n_samples exceeds dataset size of: {len(songs.keys())}. Full dataset will be used.")
         return songs
     
-    return {k: songs[k] for k in random.sample(sorted(songs.keys()), n_samples)}
+    keys = random.sample(sorted(songs.keys()), n_samples)
+    return {k: songs[k] for k in keys}
 
 def split_songs(songs, train_perc=0.8):
     """Split songs into train and test dict
