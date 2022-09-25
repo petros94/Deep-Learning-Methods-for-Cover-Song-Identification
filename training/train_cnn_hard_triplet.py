@@ -4,6 +4,8 @@ import torch
 from utils.generic import get_device 
 
 from pytorch_metric_learning import miners, losses, reducers
+from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
+
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
@@ -18,6 +20,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
     loss_func = losses.TripletMarginLoss(margin=margin, reducer=reducer)
     miner = batch_all_miner
+    accuracy_calculator = AccuracyCalculator()
     
     criterion = torch.nn.TripletMarginLoss()
     collate_fn_test = getattr(valid_set, "collate_fn", None)
@@ -56,51 +59,52 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             print('Evaluating model')
             model.eval()
             valid_loss=0
-            with torch.no_grad():
-                for i in range(len(valid_set)):
-                    # N X 1 X num_feats X num_samples, N
-                    (data, labels) = valid_set[i]
-                    data = data.to(device)
+            test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=accuracy_calculator)
+            # with torch.no_grad():
+            #     for i in range(len(valid_set)):
+            #         # N X 1 X num_feats X num_samples, N
+            #         (data, labels) = valid_set[i]
+            #         data = data.to(device)
                     
-                    embeddings = model(data)
-                    hard_pairs = batch_all_miner(embeddings, labels)
+            #         embeddings = model(data)
+            #         hard_pairs = batch_all_miner(embeddings, labels)
                 
-                    loss = loss_func(embeddings, labels, hard_pairs)
-                    valid_loss += loss.item()
+            #         loss = loss_func(embeddings, labels, hard_pairs)
+            #         valid_loss += loss.item()
                     
-                # for batch, (x, metadata) in enumerate(valid_dataloader):     
+            #     # for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
-                #     (anchor, pos, neg) = x 
+            #     #     (anchor, pos, neg) = x 
 
-                #     anchor.to(device)
-                #     pos.to(device)
-                #     neg.to(device)
+            #     #     anchor.to(device)
+            #     #     pos.to(device)
+            #     #     neg.to(device)
 
-                #     anchor_out = model(anchor)
-                #     pos_out = model(pos)
-                #     neg_out = model(neg)
+            #     #     anchor_out = model(anchor)
+            #     #     pos_out = model(pos)
+            #     #     neg_out = model(neg)
 
-                #     loss = criterion(anchor_out, pos_out, neg_out)
-                #     valid_loss += loss.item()
+            #     #     loss = criterion(anchor_out, pos_out, neg_out)
+            #     #     valid_loss += loss.item()
                     
-                if True or valid_loss < best_loss:
-                    print("New best random loss, saving model")
-                    best_loss = valid_loss
-                    current_patience = 0
+            #     if True or valid_loss < best_loss:
+            #         print("New best random loss, saving model")
+            #         best_loss = valid_loss
+            #         current_patience = 0
                 
-                    # Export best model checkpoint
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': valid_loss/valid_batches,
-                        }, checkpoints_path + "/checkpoint.tar")
+            #         # Export best model checkpoint
+            #         torch.save({
+            #             'epoch': epoch,
+            #             'model_state_dict': model.state_dict(),
+            #             'optimizer_state_dict': optimizer.state_dict(),
+            #             'loss': valid_loss/valid_batches,
+            #             }, checkpoints_path + "/checkpoint.tar")
                 
-                    # Save results
-                    with open(results_path + '/train_results.json', "w") as f:
-                        json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
-                else:
-                    current_patience +=1
+            #         # Save results
+            #         with open(results_path + '/train_results.json', "w") as f:
+            #             json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+            #     else:
+            #         current_patience +=1
                     
                 print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
                 
@@ -114,3 +118,31 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     # Load best model
     checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
     model.load_state_dict(checkpoint['model_state_dict'])
+    
+    
+    
+def get_all_embeddings(data_set, model):
+    device = get_device()
+    embeddings = []
+    all_labels = []
+    with torch.no_grad():
+        for i in range(len(data_set)):
+            # N X 1 X num_feats X num_samples, N
+            (data, labels) = data_set[i]
+            data = data.to(device)
+            
+            embeddings.append(model(data))
+            all_labels.extend(labels)
+            
+    return torch.cat(embeddings), torch.tensor(all_labels)
+    
+### compute accuracy using AccuracyCalculator from pytorch-metric-learning ###
+def test(train_set, valid_set, model, accuracy_calculator):
+    train_embeddings, train_labels = get_all_embeddings(train_set, model)
+    test_embeddings, test_labels = get_all_embeddings(valid_set, model)
+    print("Computing accuracy")
+    accuracies = accuracy_calculator.get_accuracy(
+        test_embeddings, train_embeddings, test_labels, train_labels, False
+    )
+    print(accuracies)
+    print("Test set accuracy (Precision@1) = {}".format(accuracies["precision_at_1"]))
