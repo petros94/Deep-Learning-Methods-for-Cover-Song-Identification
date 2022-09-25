@@ -3,7 +3,7 @@ import torch
 
 from utils.generic import get_device 
 
-from pytorch_metric_learning import miners, losses, reducers
+from pytorch_metric_learning import miners, losses, reducers, distances
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
@@ -13,9 +13,10 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     margin = 1.00
-    batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard")
-    batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
-    loss_func = losses.TripletMarginLoss(margin=margin)
+    distance = distances.LpDistance(normalize_embeddings=False)
+    batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard", distance=distance)
+    batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all", distance=distance)
+    loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
     miner = batch_all_miner
     
     criterion = torch.nn.TripletMarginLoss()
