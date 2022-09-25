@@ -38,18 +38,18 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     train_set = make_dataset(train_songs, config_path=config_path, type="hard_triplet")
     valid_set = make_dataset(valid_songs, config_path=config_path, type="hard_triplet")
     random_valid_set = make_dataset(valid_songs, config_path=config_path, type="triplet")
+    if len(test_songs) > 0:
+        test_set = make_dataset(test_songs, config_path=config_path, type="triplet")
+    else:
+        print("No test set provided, validation set will be used")
+        test_set = valid_set
+        
     print("Created training set: {} samples, valid set: {} samples".format(len(train_set), len(valid_set)))
     
     model = make_model(config_path=config_path)
     
     print("Begin training")
     train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name, second_valid_set=random_valid_set) 
-    
-    if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type="triplet")
-    else:
-        print("No test set provided, validation set will be used")
-        test_set = valid_set
         
     print("Plot ROC and calculate metrics")
     roc_stats = generate_ROC(model, test_set, config['train']['batch_size'], results_path=res_dir_name)
