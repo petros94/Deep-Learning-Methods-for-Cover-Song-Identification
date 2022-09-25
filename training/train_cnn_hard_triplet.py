@@ -106,12 +106,12 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             #     else:
             #         current_patience +=1
                     
-                print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
+        #         print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
                 
                 
-        if current_patience == patience:
-            print(f"No further improvement after {patience} epochs, breaking.")
-            break
+        # if current_patience == patience:
+        #     print(f"No further improvement after {patience} epochs, breaking.")
+        #     break
                     
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}")
         
