@@ -12,12 +12,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    semi_hard_miner = miners.BatchEasyHardMiner(
-        pos_strategy=miners.BatchEasyHardMiner.EASY,
-        neg_strategy=miners.BatchEasyHardMiner.SEMIHARD)
-    hard_miner = miners.BatchEasyHardMiner(
-        pos_strategy=miners.BatchEasyHardMiner.HARD,
-        neg_strategy=miners.BatchEasyHardMiner.HARD)
+    hard_miner = miners.BatchHardMiner()
     loss_func = losses.TripletMarginLoss(margin=1.00)
     miner = hard_miner
     
