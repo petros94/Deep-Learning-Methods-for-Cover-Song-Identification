@@ -19,7 +19,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
         pos_strategy=miners.BatchEasyHardMiner.HARD,
         neg_strategy=miners.BatchEasyHardMiner.HARD)
     loss_func = losses.TripletMarginLoss(margin=1.00)
-    miner = semi_hard_miner
+    miner = hard_miner
     
     if second_valid_set is not None:
         criterion = torch.nn.TripletMarginLoss()
@@ -112,13 +112,13 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 
                         loss = criterion(anchor_out, pos_out, neg_out)
                         valid_loss += loss.item()
-                    if valid_loss < best_rand_loss:
-                        print("New best random loss")
-                        best_rand_loss = valid_loss
-                    else: 
-                        if miner == semi_hard_miner:
-                            print("Switching to hard triplet")
-                            miner = hard_miner
+                    # if valid_loss < best_rand_loss:
+                    #     print("New best random loss")
+                    #     best_rand_loss = valid_loss
+                    # else: 
+                    #     if miner == semi_hard_miner:
+                    #         print("Switching to hard triplet")
+                    #         miner = hard_miner
                 print(f"Epoch {epoch} random triplet valid loss: {valid_loss/random_valid_batches}")
                 
                 
