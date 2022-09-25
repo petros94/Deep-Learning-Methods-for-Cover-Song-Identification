@@ -84,7 +84,7 @@ def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
         
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    test_songs = make_dataset(test_songs, config_path=config_path)
+    test_songs = make_dataset(test_songs, config_path=config_path, type='triplet')
     print("Created eval set: {} samples".format(len(test_songs)))
     
     model = make_model(config_path=config_path)
