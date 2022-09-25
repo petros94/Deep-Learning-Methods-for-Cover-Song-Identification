@@ -13,5 +13,5 @@ def train(model, train_set, valid_set, config_path, checkpoint_dir, results_dir,
                                   checkpoint_dir, results_dir)
     elif config['loss'] == 'hard_triplet':
         return train_hard_triplet_loss(model, train_set, valid_set, 
-                                  config['train']['n_epochs'], config['train']['patience'], config['train']['lr'], 
+                                  config['train']['n_epochs'], config['train']['patience'], config['train']['batch_size'], config['train']['lr'], 
                                   checkpoint_dir, results_dir, second_valid_set=second_valid_set)
