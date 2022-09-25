@@ -34,6 +34,7 @@ def make_model(config_path: str = 'models/config.json'):
     if config['model']['checkpoint_path'] is not None:
         loc = get_device()
         chk = torch.load(config['model']['checkpoint_path'], map_location=torch.device(loc)) 
+        print("loaded pretrained model")
         
         model.load_state_dict(chk['model_state_dict'])
         epoch = chk['epoch']
