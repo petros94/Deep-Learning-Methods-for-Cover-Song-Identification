@@ -15,7 +15,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     reducer = reducers.ThresholdReducer(low=0)
     margin = 1.00
     batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard")
-    batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
+    batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all")
     loss_func = losses.TripletMarginLoss(margin=margin, reducer=reducer)
     miner = batch_semihard_miner
     
@@ -63,7 +63,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     data = data.to(device)
                     
                     embeddings = model(data)
-                    hard_pairs = miner(embeddings, labels)
+                    hard_pairs = batch_all_miner(embeddings, labels)
                 
                     loss = loss_func(embeddings, labels, hard_pairs)
                     valid_loss += loss.item()
@@ -83,7 +83,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 #     loss = criterion(anchor_out, pos_out, neg_out)
                 #     valid_loss += loss.item()
                     
-                if valid_loss < best_loss:
+                if True or valid_loss < best_loss:
                     print("New best random loss, saving model")
                     best_loss = valid_loss
                     current_patience = 0
