@@ -50,7 +50,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             epoch_loss += loss.item()
 
             if i%16==0:
-                print(f'batch {i}/{train_batches}, loss: {loss.item()}')
+                print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
         if epoch%1==0:
             print('Evaluating model')
