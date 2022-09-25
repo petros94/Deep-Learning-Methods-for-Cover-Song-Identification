@@ -3,7 +3,7 @@ import torch
 
 from utils.generic import get_device 
 
-from pytorch_metric_learning import miners, losses
+from pytorch_metric_learning import miners, losses, reducers
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path, second_valid_set):
 
@@ -12,8 +12,9 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    reducer = reducers.ThresholdReducer(low=0)
     hard_miner = miners.TripletMarginMiner(margin=1.00, type_of_triplets="semihard")
-    loss_func = losses.TripletMarginLoss(margin=1.00)
+    loss_func = losses.TripletMarginLoss(margin=1.00, reducer=reducer)
     miner = hard_miner
     
     if second_valid_set is not None:
