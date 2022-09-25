@@ -43,7 +43,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             embeddings = model(data)
             triplets = miner(embeddings, labels)
          
-            loss = loss_func(embeddings, triplets)
+            loss = loss_func(embeddings, labels, triplets)
             loss.backward()
             optimizer.step()
 
