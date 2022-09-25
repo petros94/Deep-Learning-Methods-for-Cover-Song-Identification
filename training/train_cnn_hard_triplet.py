@@ -70,23 +70,23 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             
                 print(f"Epoch {epoch} valid loss: {valid_loss/valid_batches}")
                 if valid_loss < best_loss:
-                    print("New best loss, saving model")
+                    print("New best valid loss")
                     best_loss = valid_loss
-                    current_patience = 0
+                    # current_patience = 0
                     
-                    # Export best model checkpoint
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': valid_loss/valid_batches,
-                        }, checkpoints_path + "/checkpoint.tar")
+                #     # Export best model checkpoint
+                #     torch.save({
+                #         'epoch': epoch,
+                #         'model_state_dict': model.state_dict(),
+                #         'optimizer_state_dict': optimizer.state_dict(),
+                #         'loss': valid_loss/valid_batches,
+                #         }, checkpoints_path + "/checkpoint.tar")
                     
-                    # Save results
-                    with open(results_path + '/train_results.json', "w") as f:
-                        json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
-                else:
-                    current_patience +=1
+                #     # Save results
+                #     with open(results_path + '/train_results.json', "w") as f:
+                #         json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+                # else:
+                #     current_patience +=1
                     
             # Evaluate on random triplets
             if second_valid_set is not None:
@@ -107,13 +107,26 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 
                         loss = criterion(anchor_out, pos_out, neg_out)
                         valid_loss += loss.item()
-                    # if valid_loss < best_rand_loss:
-                    #     print("New best random loss")
-                    #     best_rand_loss = valid_loss
-                    # else: 
-                    #     if miner == semi_hard_miner:
-                    #         print("Switching to hard triplet")
-                    #         miner = hard_miner
+                        
+                    if valid_loss < best_rand_loss:
+                        print("New best random loss, saving model")
+                        best_rand_loss = valid_loss
+                        current_patience = 0
+                    
+                        # Export best model checkpoint
+                        torch.save({
+                            'epoch': epoch,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            'loss': valid_loss/valid_batches,
+                            }, checkpoints_path + "/checkpoint.tar")
+                    
+                        # Save results
+                        with open(results_path + '/train_results.json', "w") as f:
+                            json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+                    else:
+                        current_patience +=1
+                    
                 print(f"Epoch {epoch} random triplet valid loss: {valid_loss/random_valid_batches}")
                 
                 
