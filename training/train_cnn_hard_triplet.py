@@ -26,7 +26,7 @@ def RandomMiner(embeddings, labels):
         positives.append(pos)
         negatives.append(neg)
         
-    return (anchors, positives, negatives)
+    return (positives, positives, negatives)
         
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
