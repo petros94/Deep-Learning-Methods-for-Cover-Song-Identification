@@ -79,7 +79,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
             int_label = self.int_mapping[song_id]
             for cover in covers:
                 repr = cover['repr']
-                frames = segment_and_scale(repr, frame_size=None, scale=(1, 0.33))
+                frames = segment_and_scale(repr, frame_size=1400, scale=(1, 0.33))[0].unsqueeze(0)
                 songs_repr.append(frames)
                 labels.append(int_label)
                 
