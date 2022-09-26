@@ -92,6 +92,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     # N X 1 X num_feats X num_samples, N
                     (data, labels) = valid_set[i]
                     data = data.to(device)
+                    labels = labels.to(device)
                     
                     embeddings = model(data)
                 
