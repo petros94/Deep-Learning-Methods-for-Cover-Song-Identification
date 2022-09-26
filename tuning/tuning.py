@@ -82,12 +82,12 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             pos_preds, _ = clf(data[a], data[p])
             pos_preds = pos_preds.cpu().tolist()
             y_pred.extend(pos_preds)
-            y_true.extend([1]*len(y_pred))
+            y_true.extend([1]*len(pos_preds))
             
             neg_preds, _ = clf(data[a], data[n])
             neg_preds = neg_preds.cpu().tolist()
             y_pred.extend(neg_preds)
-            y_true.extend([0]*len(y_pred))
+            y_true.extend([0]*len(neg_preds))
                             
     pr, rec, f1, sup = precision_recall_fscore_support(y_true, y_pred)
     acc = accuracy_score(y_true, y_pred)
