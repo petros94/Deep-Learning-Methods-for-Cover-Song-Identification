@@ -87,6 +87,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             print('Evaluating model')
             model.eval()
             valid_loss=0
+            mean_triplets = 0
             with torch.no_grad():
                 for i in range(len(valid_set)):
                     # N X 1 X num_feats X num_samples, N
@@ -98,6 +99,10 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 
                     loss = random_triplet_loss(embeddings, labels)
                     valid_loss += loss.item()
+                    
+                if i%16==0:
+                    mean_triplets += miner.num_triplets
+                    print(f'batch {i}/{valid_batches}, loss: {loss.item()}, triplets: {random_triplet_loss.num_triplets}')
                     
                 # for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
