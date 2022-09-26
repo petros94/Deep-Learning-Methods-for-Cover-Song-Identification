@@ -16,7 +16,7 @@ def RandomMiner(embeddings, labels):
         anchor = idx
         pos_ids = torch.argwhere(labels == label).squeeze()
         pos = idx
-        while pos != idx:
+        while pos == idx:
             pos = random.choice(pos_ids)
             
         neg_ids = torch.argwhere(labels != label).squeeze()
@@ -94,8 +94,6 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     
                     embeddings = model(data)
                     triplets = valid_miner(embeddings, labels)
-                    print(labels)
-                    print(triplets)
                 
                     loss = loss_func(embeddings, labels, triplets)
                     valid_loss += loss.item()
@@ -155,14 +153,14 @@ def get_all_embeddings(data_set, model):
     embeddings = []
     all_labels = []
     with torch.no_grad():
-        for i in range(len(data_set)):
-            # N X 1 X num_feats X num_samples, N
-            (data, labels) = data_set[i]
-            data = data.to(device)
+        songs, labels = data_set.get_full_songs()
+        for s in songs:
+            # 1 X num_feats X num_samples, N
+            s = s.to(device)
+            s = s.unsqueeze(0)
+            embeddings.append(model(s))
             
-            embeddings.append(model(data))
-            all_labels.extend(labels)
-            
+    print(f"get_all_embeddings: songs len: {len(embeddings)}")
     return torch.cat(embeddings), torch.tensor(all_labels)
     
 ### compute accuracy using AccuracyCalculator from pytorch-metric-learning ###

@@ -135,7 +135,11 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
     in order to create CNN inputs.
     """
     repr = torch.tensor(repr)
-    frames = torch.stack(generate_segments(repr, step=frame_size))
+    
+    if frame_size is None or repr.size(1) >= frame_size:
+        frames = repr.unsqueeze(0)
+    else:
+        frames = torch.stack(generate_segments(repr, step=frame_size))
     frames = frames.unsqueeze(1)
     frames = F.interpolate(frames, scale_factor=scale)
     frames = frames.squeeze(1)

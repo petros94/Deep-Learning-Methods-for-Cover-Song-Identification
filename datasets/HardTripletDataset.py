@@ -10,6 +10,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
         print("Creating HardTripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
+        self.songs = songs
         
         """
         {
@@ -70,3 +71,16 @@ class HardTripletDataset(torch.utils.data.Dataset):
     
     def __len__(self):
         return len(self.batches)
+    
+    def get_full_songs(self):
+        songs_repr = []
+        labels = []
+        for song_id, covers in self.songs.items():
+            int_label = self.int_mapping[song_id]
+            for cover in covers:
+                repr = cover['repr']
+                frames = segment_and_scale(repr, frame_size=None, scale=(1, 0.33))
+                songs_repr.append(frames)
+                labels.append(int_label)
+                
+        return songs_repr, labels
