@@ -87,16 +87,15 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                # for i in range(len(valid_set)):
-                #     # N X 1 X num_feats X num_samples, N
-                #     (data, labels) = valid_set[i]
-                #     data = data.to(device)
+                for i in range(len(valid_set)):
+                    # N X 1 X num_feats X num_samples, N
+                    (data, labels) = valid_set[i]
+                    data = data.to(device)
                     
-                #     embeddings = model(data)
-                #     triplets = valid_miner(embeddings, labels)
+                    embeddings = model(data)
                 
-                #     loss = loss_func(embeddings, labels, triplets)
-                #     valid_loss += loss.item()
+                    loss = loss_func(embeddings, labels, triplets_per_anchor=1)
+                    valid_loss += loss.item()
                     
                 for batch, (x, metadata) in enumerate(valid_dataloader):     
                 

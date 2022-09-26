@@ -36,7 +36,7 @@
         "n_epochs": 10,
         "batch_size": 4,
         "lr": 5e-4,
-        "patience": 6,
+        "patience": 1,
         "checkpoints_path": "checkpoints/",
         "results_path": "results/"
     }
