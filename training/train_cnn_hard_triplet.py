@@ -11,7 +11,7 @@ def RandomMiner(embeddings, labels):
     anchors = []
     positives = []
     negatives = []
-    for idx, label in enumerate(embeddings, labels):
+    for idx, label in enumerate(labels):
         
         anchor = idx
         pos_ids = torch.argwhere(labels == label).squeeze()
