@@ -4,6 +4,8 @@ import torch
 from utils.generic import get_device 
 
 from pytorch_metric_learning import miners, losses, reducers, distances
+from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
+
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
@@ -19,6 +21,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
     miner = batch_all_miner
+    acc_calc = AccuracyCalculator()
     
     criterion = torch.nn.TripletMarginLoss()
     collate_fn_test = getattr(valid_set, "collate_fn", None)
@@ -109,10 +112,11 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
                 
                 
-        if current_patience == patience:
-            print(f"No further improvement after {patience} epochs, breaking.")
-            break
-                    
+            if current_patience == patience:
+                print(f"No further improvement after {patience} epochs, breaking.")
+                break
+        
+            test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)            
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}, mean triplets: {int(float(mean_triplets)/train_batches)}, perf score: {epoch_loss*int(float(mean_triplets)/train_batches)}")
         
     # Load best model
