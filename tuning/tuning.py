@@ -15,7 +15,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
     device = get_device()
     model.to(device)
     distances = []
-    labels = []
+    clf_labels = []
     miner = RandomTripletMiner
     with torch.no_grad():
         for i in range(len(data_set)):
@@ -30,10 +30,10 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
             
             distances.append(pos_dist)
-            labels.extend([1]*pos_dist.size()[0])
+            clf_labels.extend([1]*pos_dist.size()[0])
             
             distances.append(neg_dist)
-            labels.extend([0]*neg_dist.size()[0])
+            clf_labels.extend([0]*neg_dist.size()[0])
             
         # for batch, (x, metadata) in enumerate(dataloader):     
         
@@ -52,8 +52,8 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
         #     distances.append(dist)
         #     labels.extend([label]*dist.size()[0])
                             
-    distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
-    fpr, tpr, thresholds = roc_curve(labels, 1/distances)
+    distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
+    fpr, tpr, thresholds = roc_curve(clf_labels, 1/distances)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
     roc_auc = auc(fpr, tpr)
     
