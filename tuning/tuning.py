@@ -26,9 +26,8 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             embeddings = model(data)
             a, p, n = miner(embeddings, labels)
             
-            emb_a, emb_p, emb_n = model(a), model(p), model(n)
-            pos_dist = torch.norm(emb_a - emb_p, dim=1)
-            neg_dist = torch.norm(emb_a - emb_n, dim=1)
+            pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+            neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
             
             distances.append(pos_dist)
             labels.extend([1]*pos_dist.size()[0])
