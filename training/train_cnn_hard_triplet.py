@@ -151,7 +151,6 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
 def get_all_embeddings(data_set, model):
     device = get_device()
     embeddings = []
-    all_labels = []
     with torch.no_grad():
         songs, labels = data_set.get_full_songs()
         for s in songs:
@@ -161,7 +160,7 @@ def get_all_embeddings(data_set, model):
             embeddings.append(model(s))
             
     print(f"get_all_embeddings: songs len: {len(embeddings)}")
-    return torch.cat(embeddings), torch.tensor(all_labels)
+    return torch.cat(embeddings), torch.tensor(labels)
     
 ### compute accuracy using AccuracyCalculator from pytorch-metric-learning ###
 def test(train_set, valid_set, model, accuracy_calculator):
