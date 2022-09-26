@@ -101,7 +101,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     valid_loss += loss.item()
                     
                     if i%16==0:
-                        print(f'batch {i}/{valid_batches}, loss: {loss.item()})
+                        print(f'batch {i}/{valid_batches}, loss: {loss.item()}')
                     
                 # for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
