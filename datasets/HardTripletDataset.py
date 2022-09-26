@@ -59,7 +59,6 @@ class HardTripletDataset(torch.utils.data.Dataset):
             # Samples are now a tensor of size P*K X 1 X num_features X frame_size
             samples = torch.cat(samples)
             labels = torch.tensor(labels)
-            print(labels)
             
             assert samples.dim() == 4
             
