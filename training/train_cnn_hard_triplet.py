@@ -26,7 +26,7 @@ def RandomMiner(embeddings, labels):
         positives.append(pos)
         negatives.append(neg)
         
-    return (positives, positives, negatives)
+    return (anchors, positives, negatives)
         
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
@@ -87,31 +87,31 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
             model.eval()
             valid_loss=0
             with torch.no_grad():
-                for i in range(len(valid_set)):
-                    # N X 1 X num_feats X num_samples, N
-                    (data, labels) = valid_set[i]
-                    data = data.to(device)
+                # for i in range(len(valid_set)):
+                #     # N X 1 X num_feats X num_samples, N
+                #     (data, labels) = valid_set[i]
+                #     data = data.to(device)
                     
-                    embeddings = model(data)
-                    triplets = valid_miner(embeddings, labels)
+                #     embeddings = model(data)
+                #     triplets = valid_miner(embeddings, labels)
                 
-                    loss = loss_func(embeddings, labels, triplets)
-                    valid_loss += loss.item()
-                    
-                # for batch, (x, metadata) in enumerate(valid_dataloader):     
-                
-                #     (anchor, pos, neg) = x 
-
-                #     anchor.to(device)
-                #     pos.to(device)
-                #     neg.to(device)
-
-                #     anchor_out = model(anchor)
-                #     pos_out = model(pos)
-                #     neg_out = model(neg)
-
-                #     loss = criterion(anchor_out, pos_out, neg_out)
+                #     loss = loss_func(embeddings, labels, triplets)
                 #     valid_loss += loss.item()
+                    
+                for batch, (x, metadata) in enumerate(valid_dataloader):     
+                
+                    (anchor, pos, neg) = x 
+
+                    anchor.to(device)
+                    pos.to(device)
+                    neg.to(device)
+
+                    anchor_out = model(anchor)
+                    pos_out = model(pos)
+                    neg_out = model(neg)
+
+                    loss = criterion(anchor_out, pos_out, neg_out)
+                    valid_loss += loss.item()
                     
                 if valid_loss < best_loss:
                     print("New best random loss, saving model")
