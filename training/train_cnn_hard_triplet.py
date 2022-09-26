@@ -139,7 +139,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 print(f"No further improvement after {patience} epochs, breaking.")
                 break
         
-            test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)            
+            # test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)            
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}, mean triplets: {int(float(mean_triplets)/train_batches)}, perf score: {epoch_loss*int(float(mean_triplets)/train_batches)}")
         
     # Load best model
