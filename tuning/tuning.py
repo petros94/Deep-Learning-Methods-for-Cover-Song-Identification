@@ -10,7 +10,6 @@ from utils.generic import get_device
 from training.miners import RandomTripletMiner
 
 def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
-    dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
     model.eval()
     device = get_device()
     model.to(device)
@@ -35,23 +34,6 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             distances.append(neg_dist)
             clf_labels.extend([0]*neg_dist.size()[0])
             
-        # for batch, (x, metadata) in enumerate(dataloader):     
-        
-        #     # x: 3 x N x 1 x W x H
-        #     (anchor, pos, neg) = x 
-
-        #     anchor.to(device)
-        #     pos.to(device)
-        #     neg.to(device)
-            
-        #     pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
-            
-        #     #first dimension: N X 128
-        #     first, second = model(pair[0]), model(pair[1])  
-        #     dist = torch.norm(first - second, dim=1)       
-        #     distances.append(dist)
-        #     labels.extend([label]*dist.size()[0])
-                            
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
     fpr, tpr, thresholds = roc_curve(clf_labels, 1/distances)
     df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
@@ -83,34 +65,34 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
 
 def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
     print(f"Classifier threshold: {clf.D}")
-    dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
     clf.eval()
     device = get_device()
     clf.to(device)
-    preds = []
-    labels = []
+    y_pred = []
+    y_true = []
+    miner = RandomTripletMiner
     with torch.no_grad():
-        for batch, (x, metadata) in enumerate(dataloader):     
-        
-            # x: 3 x N x 1 x W x H
-            (anchor, pos, neg) = x 
-
-            anchor.to(device)
-            pos.to(device)
-            neg.to(device)
+        for i in range(len(data_set)):
+            # N X 1 X num_feats X num_samples, N
+            (data, labels) = data_set[i]
+            data = data.to(device)
             
-            pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
+            a, p, n = miner(None, labels)
             
-            #first dimension: N X 128
-            pred, dist = clf(pair[0], pair[1])
-            pred = pred.cpu().tolist()
-            preds.extend(pred)
-            labels.extend([label]*len(pred))
+            pos_preds, _ = clf(data[a], data[p])
+            pos_preds = pos_preds.cpu().tolist()
+            y_pred.extend(pos_preds)
+            y_true.extend([1]*len(y_pred))
+            
+            neg_preds, _ = clf(data[a], data[n])
+            neg_preds = neg_preds.cpu().tolist()
+            y_pred.extend(neg_preds)
+            y_true.extend([0]*len(y_pred))
                             
-    pr, rec, f1, sup = precision_recall_fscore_support(labels, preds)
-    acc = accuracy_score(labels, preds)
+    pr, rec, f1, sup = precision_recall_fscore_support(y_true, y_pred)
+    acc = accuracy_score(y_true, y_pred)
     df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
-    ConfusionMatrixDisplay.from_predictions(labels, preds)
+    ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
     
     if results_path:
         df.to_csv(results_path + '/metrics.csv')
