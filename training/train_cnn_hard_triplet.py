@@ -42,6 +42,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all", distance=distance)
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
+    random_triplet_loss = losses.TripletMarginLoss(margin=margin, distance=distance, triplets_per_anchor=1)
     miner = batch_all_miner
     valid_miner = RandomMiner
     acc_calc = AccuracyCalculator(k=512)
@@ -94,23 +95,23 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     
                     embeddings = model(data)
                 
-                    loss = loss_func(embeddings, labels, triplets_per_anchor=1)
+                    loss = random_triplet_loss(embeddings, labels)
                     valid_loss += loss.item()
                     
-                for batch, (x, metadata) in enumerate(valid_dataloader):     
+                # for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
-                    (anchor, pos, neg) = x 
+                #     (anchor, pos, neg) = x 
 
-                    anchor.to(device)
-                    pos.to(device)
-                    neg.to(device)
+                #     anchor.to(device)
+                #     pos.to(device)
+                #     neg.to(device)
 
-                    anchor_out = model(anchor)
-                    pos_out = model(pos)
-                    neg_out = model(neg)
+                #     anchor_out = model(anchor)
+                #     pos_out = model(pos)
+                #     neg_out = model(neg)
 
-                    loss = criterion(anchor_out, pos_out, neg_out)
-                    valid_loss += loss.item()
+                #     loss = criterion(anchor_out, pos_out, neg_out)
+                #     valid_loss += loss.item()
                     
                 if valid_loss < best_loss:
                     print("New best random loss, saving model")
