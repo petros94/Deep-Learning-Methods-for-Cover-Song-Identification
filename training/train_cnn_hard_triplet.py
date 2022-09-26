@@ -21,7 +21,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
     miner = batch_all_miner
-    acc_calc = AccuracyCalculator()
+    acc_calc = AccuracyCalculator(k=512)
     
     criterion = torch.nn.TripletMarginLoss()
     collate_fn_test = getattr(valid_set, "collate_fn", None)
