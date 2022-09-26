@@ -83,5 +83,4 @@ class HardTripletDataset(torch.utils.data.Dataset):
                 songs_repr.append(frames)
                 labels.append(int_label)
                 
-        print(songs_repr[0].size())
         return songs_repr, labels
