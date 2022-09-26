@@ -7,6 +7,7 @@ import random
 import pandas as pd
 
 from utils.generic import get_device
+from training.miners import RandomTripletMiner
 
 def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
     dataloader = torch.utils.data.DataLoader(data_set, batch_size=batch_size, shuffle=True, collate_fn=getattr(data_set, "collate_fn", None))
@@ -15,23 +16,42 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
     model.to(device)
     distances = []
     labels = []
+    miner = RandomTripletMiner
     with torch.no_grad():
-        for batch, (x, metadata) in enumerate(dataloader):     
+        for i in range(len(data_set)):
+            # N X 1 X num_feats X num_samples, N
+            (data, labels) = data_set[i]
+            data = data.to(device)
+            
+            embeddings = model(data)
+            a, p, n = miner(embeddings, labels)
+            
+            emb_a, emb_p, emb_n = model(a), model(p), model(n)
+            pos_dist = torch.norm(emb_a - emb_p, dim=1)
+            neg_dist = torch.norm(emb_a - emb_n, dim=1)
+            
+            distances.append(pos_dist)
+            labels.extend([1]*pos_dist.size()[0])
+            
+            distances.append(neg_dist)
+            labels.extend([0]*neg_dist.size()[0])
+            
+        # for batch, (x, metadata) in enumerate(dataloader):     
         
-            # x: 3 x N x 1 x W x H
-            (anchor, pos, neg) = x 
+        #     # x: 3 x N x 1 x W x H
+        #     (anchor, pos, neg) = x 
 
-            anchor.to(device)
-            pos.to(device)
-            neg.to(device)
+        #     anchor.to(device)
+        #     pos.to(device)
+        #     neg.to(device)
             
-            pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
+        #     pair, label = ((anchor, pos), 1) if random.random() > 0.5 else ((anchor, neg), 0)
             
-            #first dimension: N X 128
-            first, second = model(pair[0]), model(pair[1])  
-            dist = torch.norm(first - second, dim=1)       
-            distances.append(dist)
-            labels.extend([label]*dist.size()[0])
+        #     #first dimension: N X 128
+        #     first, second = model(pair[0]), model(pair[1])  
+        #     dist = torch.norm(first - second, dim=1)       
+        #     distances.append(dist)
+        #     labels.extend([label]*dist.size()[0])
                             
     distances, labels = torch.cat(distances).cpu().numpy(), np.array(labels)
     fpr, tpr, thresholds = roc_curve(labels, 1/distances)

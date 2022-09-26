@@ -39,7 +39,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     valid_set = make_dataset(valid_songs, config_path=config_path, type="hard_triplet")
 
     if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type="triplet")
+        test_set = make_dataset(test_songs, config_path=config_path, type="hard_triplet")
     else:
         print("No test set provided, validation set will be used")
         test_set = valid_set

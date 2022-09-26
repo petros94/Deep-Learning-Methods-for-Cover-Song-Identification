@@ -3,31 +3,10 @@ import torch
 import random
 
 from utils.generic import get_device 
+from training.miners import RandomTripletMiner
 
 from pytorch_metric_learning import miners, losses, reducers, distances
 from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
-
-def RandomMiner(embeddings, labels):
-    anchors = []
-    positives = []
-    negatives = []
-    for idx, label in enumerate(labels):
-        
-        anchor = idx
-        pos_ids = torch.argwhere(labels == label).squeeze()
-        pos = idx
-        while pos == idx:
-            pos = random.choice(pos_ids).item()
-            
-        neg_ids = torch.argwhere(labels != label).squeeze()
-        neg = random.choice(neg_ids).item()
-        
-        anchors.append(anchor)
-        positives.append(pos)
-        negatives.append(neg)
-        
-    return (anchors, positives, negatives)
-        
 
 def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
 
@@ -44,7 +23,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
     random_triplet_loss = losses.TripletMarginLoss(margin=margin, distance=distance, triplets_per_anchor=1)
     miner = batch_all_miner
-    valid_miner = RandomMiner
+    valid_miner = RandomTripletMiner
     acc_calc = AccuracyCalculator(k=512)
     
     criterion = torch.nn.TripletMarginLoss()
@@ -101,21 +80,6 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     
                     if i%16==0:
                         print(f'batch {i}/{valid_batches}, loss: {loss.item()}')
-                    
-                # for batch, (x, metadata) in enumerate(valid_dataloader):     
-                
-                #     (anchor, pos, neg) = x 
-
-                #     anchor.to(device)
-                #     pos.to(device)
-                #     neg.to(device)
-
-                #     anchor_out = model(anchor)
-                #     pos_out = model(pos)
-                #     neg_out = model(neg)
-
-                #     loss = criterion(anchor_out, pos_out, neg_out)
-                #     valid_loss += loss.item()
                     
                 if valid_loss < best_loss:
                     print("New best random loss, saving model")
