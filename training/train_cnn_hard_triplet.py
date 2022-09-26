@@ -94,7 +94,8 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     
                     embeddings = model(data)
                     triplets = valid_miner(embeddings, labels)
-                    print(labels, triplets)
+                    print(labels)
+                    print(triplets)
                 
                     loss = loss_func(embeddings, labels, triplets)
                     valid_loss += loss.item()
