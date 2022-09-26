@@ -137,7 +137,7 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
     repr = torch.tensor(repr)
     
     if frame_size is None or repr.size(1) >= frame_size:
-        print("warning")
+        print("warning", repr.size(1))
         frames = repr.unsqueeze(0)
     else:
         frames = torch.stack(generate_segments(repr, step=frame_size))
