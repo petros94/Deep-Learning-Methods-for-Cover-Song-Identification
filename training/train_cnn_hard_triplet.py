@@ -25,6 +25,7 @@ def RandomMiner(embeddings, labels):
         anchors.append(anchor)
         positives.append(pos)
         negatives.append(neg)
+        print(anchor, pos, neg)
         
     return (anchors, positives, negatives)
         
