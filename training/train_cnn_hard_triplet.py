@@ -102,7 +102,7 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                     
                     if i%16==0:
                         mean_triplets += miner.num_triplets
-                        print(f'batch {i}/{valid_batches}, loss: {loss.item()}, triplets: {random_triplet_loss.num_triplets}')
+                        print(f'batch {i}/{valid_batches}, loss: {loss.item()})
                     
                 # for batch, (x, metadata) in enumerate(valid_dataloader):     
                 
