@@ -71,7 +71,7 @@ def visualize_embeddings_pca(embeddings: np.array,
   return points
 
 def visualize_losses(losses: Dict[str, List[float]], file_path: str=None):
-  df = pd.Dataframe(losses)
+  df = pd.DataFrame(losses)
   df = pd.melt(df, id_vars=['epoch'], value_name="loss", value_vars=['train', 'valid'], var_name='type')
   
   fig = px.line(df, x="epoch", y="loss", color="type")
