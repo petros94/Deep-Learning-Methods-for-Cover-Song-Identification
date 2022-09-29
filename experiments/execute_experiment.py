@@ -1,7 +1,5 @@
 import json
 import os
-import logging
-import random
 import numpy as np
 from datasets.factory import make_dataset
 from datetime import datetime
@@ -10,10 +8,9 @@ from models.classifier import ThresholdClassifier
 from models.factory import make_model
 from songbase.load_songs import from_config
 from training.train import train
-from utils.generic import get_device, split_songs
-from utils.prediction import distance
+from utils.generic import split_songs
+from utils.visualization import visualize_losses
 from tuning.tuning import generate_ROC, generate_metrics
-import torch
 
 def execute_single(config_path: str = 'experiments/experiment_config.json'):
     print("Executing single experiment")
@@ -49,8 +46,11 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     model = make_model(config_path=config_path)
     
     print("Begin training")
-    train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
+    losses = train(model, train_set, valid_set, config_path=config_path, checkpoint_dir=chk_dir_name, results_dir=res_dir_name) 
         
+    print("Plot losses")
+    visualize_losses(losses, file_path=res_dir_name)
+    
     print("Plot ROC and calculate metrics")
     roc_stats = generate_ROC(model, test_set, config['train']['batch_size'], results_path=res_dir_name)
     

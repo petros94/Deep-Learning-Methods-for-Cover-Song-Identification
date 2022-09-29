@@ -14,10 +14,13 @@
 </head>
 
 <body>
-    <h2>Configuration</h2>
+    <h2>Experiment Configuration</h2>
     <pre id="myData"></pre>
     <br />
+    <h2>Model Configuration</h2>
     <br />
+    <pre id="myData2"></pre>
+    <br>
     <h2>ROC curve and Confusion Matrix</h2>
     <div class="image123">
         <div class="imgContainer">
@@ -28,13 +31,23 @@
         </div>
     </div>
     <br />
+    <h2>Train/Valid Loss per epoch</h2>
+    <div class="image123">
+        <div class="imgContainer">
+            <img src="losses.png" width="400" height="300">
+        </div>
+    </div>
+    <br />
     <br />
     __TABLE__
     <script>
         data = __DATA__;
-        appendData(data);
-        function appendData(data) {
-            document.getElementById("myData").textContent = JSON.stringify(data, undefined, 2);
+        appendData("mydata", data);
+
+        model_data = __MODELDATA__;
+        appendData("mydata2", model_data);
+        function appendData(id, data) {
+            document.getElementById(id).textContent = JSON.stringify(data, undefined, 2);
         }
     </script>
 </body>

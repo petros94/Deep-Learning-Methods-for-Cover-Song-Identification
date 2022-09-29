@@ -7,8 +7,14 @@ from training.miners import RandomTripletMiner
 
 from pytorch_metric_learning import miners, losses, reducers, distances
 from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
+from datasets.HardTripletDataset import HardTripletDataset
 
-def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epochs, patience, batch_size, lr, checkpoints_path, results_path):
+def train_hard_triplet_loss(model: torch.nn.Module,
+                            train_set: HardTripletDataset,
+                            valid_set, HardTripletDataset,
+                            n_epochs: int, 
+                            patience: int, 
+                            batch_size, lr, checkpoints_path, results_path):
 
     device = get_device()
     model.train()
@@ -20,28 +26,32 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
     batch_semihard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="semihard", distance=distance)
     batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all", distance=distance)
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
+    
     loss_func = losses.TripletMarginLoss(margin=margin, distance=distance)
-    random_triplet_loss = losses.TripletMarginLoss(margin=margin, distance=distance, triplets_per_anchor=1)
     miner = batch_all_miner
     valid_miner = RandomTripletMiner
-    acc_calc = AccuracyCalculator(k=512)
     
     criterion = torch.nn.TripletMarginLoss()
-    collate_fn_test = getattr(valid_set, "collate_fn", None)
-    valid_dataloader = torch.utils.data.DataLoader(valid_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_test)
 
     train_batches = len(train_set)
     valid_batches = len(valid_set)
     
     best_loss = 1000000
     current_patience = 0
+    
+    losses = {
+        'epoch': [],
+        'train': [],
+        'valid': []
+    }
+    
     for epoch in range(n_epochs):
-        mean_triplets = 0
+        
         print(32*"=")
         print(f"Epoch {epoch}")
-        epoch_loss = 0
         model.train()
-
+        epoch_loss = 0
+        mean_triplets = 0
         for i in range(len(train_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = train_set[i]
@@ -62,58 +72,60 @@ def train_hard_triplet_loss(model: torch.nn.Module, train_set, valid_set, n_epoc
                 mean_triplets += miner.num_triplets
                 print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
-        if epoch%1==0:
-            print('Evaluating model')
-            model.eval()
-            valid_loss=0
-            with torch.no_grad():
-                for i in range(len(valid_set)):
-                    # N X 1 X num_feats X num_samples, N
-                    (data, labels) = valid_set[i]
-                    data = data.to(device)
-                    
-                    embeddings = model(data)
-                    a, p, n = valid_miner(embeddings, labels)
+        print('Evaluating model')
+        model.eval()
+        valid_loss=0
+        with torch.no_grad():
+            for i in range(len(valid_set)):
+                # N X 1 X num_feats X num_samples, N
+                (data, labels) = valid_set[i]
+                data = data.to(device)
                 
-                    loss = criterion(embeddings[a], embeddings[p], embeddings[n])
-                    valid_loss += loss.item()
-                    
-                    if i%16==0:
-                        print(f'batch {i}/{valid_batches}, loss: {loss.item()}')
-                    
-                if valid_loss < best_loss:
-                    print("New best random loss, saving model")
-                    best_loss = valid_loss
-                    current_patience = 0
+                embeddings = model(data)
+                a, p, n = valid_miner(embeddings, labels)
+            
+                loss = criterion(embeddings[a], embeddings[p], embeddings[n])
+                valid_loss += loss.item()
                 
-                    # Export best model checkpoint
-                    torch.save({
-                        'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': valid_loss/valid_batches,
-                        }, checkpoints_path + "/checkpoint.tar")
+                if i%16==0:
+                    print(f'batch {i}/{valid_batches}, loss: {loss.item()}')
                 
-                    # Save results
-                    with open(results_path + '/train_results.json', "w") as f:
-                        json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
-                else:
-                    current_patience +=1
-                    
-                print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
-                
-                
-            if current_patience == patience:
-                print(f"No further improvement after {patience} epochs, breaking.")
-                break
         
+        if valid_loss < best_loss:
+            print("New best random loss, saving model")
+            best_loss = valid_loss
+            current_patience = 0
+        
+            # Export best model checkpoint
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': valid_loss/valid_batches,
+                }, checkpoints_path + "/checkpoint.tar")
+        
+            # Save results
+            with open(results_path + '/train_results.json', "w") as f:
+                json.dump({'n_epochs': epoch, 'valid_loss': valid_loss/valid_batches, 'train_loss': epoch_loss/train_batches}, f)
+        else:
+            current_patience +=1
+        
+        print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
             # test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)            
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}, mean triplets: {int(float(mean_triplets)/train_batches)}, perf score: {epoch_loss*int(float(mean_triplets)/train_batches)}")
+        losses['train'].append(epoch_loss/train_batches)
+        losses['valid'].append(valid_loss/valid_batches)
+        losses['epoch'].append(epoch)
+        
+        if current_patience == patience:
+            print(f"No further improvement after {patience} epochs, breaking.")
+            break
         
     # Load best model
     checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
     model.load_state_dict(checkpoint['model_state_dict'])
     
+    return losses
     
     
 def get_all_embeddings(data_set, model):

@@ -3,6 +3,7 @@
 Visualization Utils
 '''
 
+from typing import Dict, List
 import numpy as np
 import plotly.express as px
 import time
@@ -68,3 +69,14 @@ def visualize_embeddings_pca(embeddings: np.array,
   fig.update_traces(hovertemplate=hovertemplate)
   fig.show()
   return points
+
+def visualize_losses(losses: Dict[str, List[float]], file_path: str=None):
+  df = pd.Dataframe(losses)
+  df = pd.melt(df, id_vars=['epoch'], value_name="loss", value_vars=['train', 'valid'], var_name='type')
+  
+  fig = px.line(df, x="epoch", y="loss", color="type")
+  
+  if file_path is not None:
+    fig.write_image(file_path + '/losses.png')
+  fig.show()
+  
