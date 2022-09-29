@@ -40,7 +40,7 @@ def train_hard_triplet_loss(model: torch.nn.Module,
     best_loss = 1000000
     current_patience = 0
     
-    losses = {
+    losses_history = {
         'epoch': [],
         'train': [],
         'valid': []
@@ -114,9 +114,9 @@ def train_hard_triplet_loss(model: torch.nn.Module,
         print(f"Epoch {epoch} random triplet valid loss: {valid_loss/valid_batches}")
             # test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)            
         print(f"Epoch {epoch} train loss: {epoch_loss/train_batches}, mean triplets: {int(float(mean_triplets)/train_batches)}, perf score: {epoch_loss*int(float(mean_triplets)/train_batches)}")
-        losses['train'].append(epoch_loss/train_batches)
-        losses['valid'].append(valid_loss/valid_batches)
-        losses['epoch'].append(epoch)
+        losses_history['train'].append(epoch_loss/train_batches)
+        losses_history['valid'].append(valid_loss/valid_batches)
+        losses_history['epoch'].append(epoch)
         
         if current_patience == patience:
             print(f"No further improvement after {patience} epochs, breaking.")
@@ -126,7 +126,7 @@ def train_hard_triplet_loss(model: torch.nn.Module,
     checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
     model.load_state_dict(checkpoint['model_state_dict'])
     
-    return losses
+    return losses_history
     
     
 def get_all_embeddings(data_set, model):
