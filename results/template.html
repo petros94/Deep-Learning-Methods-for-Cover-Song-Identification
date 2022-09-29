@@ -40,10 +40,10 @@
     __TABLE__
     <script>
         data = __DATA__;
-        appendData("mydata", data);
+        appendData("myData", data);
 
         model_data = __MODELDATA__;
-        appendData("mydata2", model_data);
+        appendData("myData2", model_data);
         function appendData(id, data) {
             document.getElementById(id).textContent = JSON.stringify(data, undefined, 2);
         }
