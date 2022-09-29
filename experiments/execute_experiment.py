@@ -57,7 +57,7 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     try:
         thr = config['model']['threshold']
     except KeyError:
-        thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
+        thr = roc_stats.loc[roc_stats['tpr'] > 0.7, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
         
@@ -66,6 +66,10 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     with open('results/template.html') as f:
         report_html = f.read()
         report_html = report_html.replace('__DATA__', json.dumps(config))
+        
+        with open(config['model']['config_path']) as f2:
+            model_config = json.load(f2)
+        report_html = report_html.replace('__MODELDATA__', json.dumps(model_config))
         report_html = report_html.replace('__TABLE__', df.to_html())
         
     with open(res_dir_name + '/report.html', 'w') as f:
