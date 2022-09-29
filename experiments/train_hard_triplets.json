@@ -22,21 +22,21 @@
     "loss": "hard_triplet",
     "features": {
         "n_batches": 256,
-        "songs_per_batch": 64,
+        "songs_per_batch": 32,
         "samples_per_song": 8,
         "input": "hpcp",
-        "frame_size": 1400,
+        "frame_size": 1600,
         "scale": [
             1,
-            0.33
+            0.2
         ]
     },
     "train": {
         "train_perc": 0.8,
-        "n_epochs": 10,
+        "n_epochs": 15,
         "batch_size": 4,
         "lr": 5e-4,
-        "patience": 1,
+        "patience": 2,
         "checkpoints_path": "checkpoints/",
         "results_path": "results/"
     }

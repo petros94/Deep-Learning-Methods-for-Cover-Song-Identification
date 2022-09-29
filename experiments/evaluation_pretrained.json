@@ -23,10 +23,10 @@
     "features": {
         "samples_per_song": 8,
         "input": "hpcp",
-        "frame_size": 1400,
+        "frame_size": 1600,
         "scale": [
             1,
-            0.33
+            0.2
         ]
     },
     "train": {
