@@ -5,16 +5,17 @@ import random
 from utils.generic import get_device 
 from training.miners import RandomTripletMiner
 
-from pytorch_metric_learning import miners, losses, reducers, distances
-from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
+from pytorch_metric_learning import miners, distances
 from datasets.HardTripletDataset import HardTripletDataset
 
 def train_hard_triplet_loss(model: torch.nn.Module,
                             train_set: HardTripletDataset,
-                            valid_set, HardTripletDataset,
+                            valid_set: HardTripletDataset,
                             n_epochs: int, 
                             patience: int, 
-                            batch_size, lr, checkpoints_path, results_path):
+                            lr: float, 
+                            checkpoints_path: str, 
+                            results_path: str):
 
     device = get_device()
     model.train()
