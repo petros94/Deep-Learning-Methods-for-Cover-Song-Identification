@@ -5,7 +5,7 @@ import random
 from utils.generic import get_device 
 from training.miners import RandomTripletMiner
 
-from pytorch_metric_learning import miners, distances
+from pytorch_metric_learning import miners, losses, distances
 from datasets.HardTripletDataset import HardTripletDataset
 
 def train_hard_triplet_loss(model: torch.nn.Module,
