@@ -13,6 +13,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
 
         self.config = config
+        print(config)
         self.in_channels = self.config["in_channels"]
         self.layers_conv = self.config["layers"]
         self.channels = self.config["channels"]
