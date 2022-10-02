@@ -1,5 +1,6 @@
 {
     "layers": 4,
+    "in_channels": 1,
     "channels": [
         32,
         32,

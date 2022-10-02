@@ -13,6 +13,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
 
         self.config = config
+        self.in_channels = self.config["in_channels"]
         self.layers_conv = self.config["layers"]
         self.channels = self.config["channels"]
         self.kernel_size = self.config["kernel_size"]
@@ -25,7 +26,7 @@ class CNN(nn.Module):
 
     def create_network(self):
         modules_conv = []
-        in_channels = 1
+        in_channels = self.in_channels
 
         for i_conv in range(self.layers_conv):
             modules_conv.append(
