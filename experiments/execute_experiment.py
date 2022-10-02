@@ -21,8 +21,10 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     date_ = f"{datetime.now()}_{config['model']['type']}_{config['features']['input']}_{config['loss']}"
     chk_dir_name = config['train']['checkpoints_path'] + date_
     os.mkdir(chk_dir_name)
+    with open(config['model']['config_path']) as f2:
+            model_config = json.load(f2)
     with open(chk_dir_name + "/config.json", "w") as f:
-        json.dump(config, f)
+        json.dump(model_config, f)
         
     res_dir_name = config['train']['results_path'] + date_
     os.mkdir(res_dir_name)
@@ -63,19 +65,10 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
         
     df = generate_metrics(clf, test_set, config['train']['batch_size'], results_path=res_dir_name)
     
-    with open('results/template.html') as f:
-        report_html = f.read()
-        report_html = report_html.replace('__DATA__', json.dumps(config))
-        
-        with open(config['model']['config_path']) as f2:
-            model_config = json.load(f2)
-        report_html = report_html.replace('__MODELDATA__', json.dumps(model_config))
-        report_html = report_html.replace('__TABLE__', df.to_html())
-        
-    with open(res_dir_name + '/report.html', 'w') as f:
-        f.write(report_html)
+    generate_report(config, df, res_dir_name)
         
     return res_dir_name, chk_dir_name
+
 
 def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
     with open(config_path, "r") as f:
@@ -88,30 +81,36 @@ def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
         
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    test_songs = make_dataset(test_songs, config_path=config_path, type='triplet')
+    test_set = make_dataset(test_songs, config_path=config_path, type='hard_triplet')
     print("Created eval set: {} samples".format(len(test_songs)))
     
     model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
-    roc_stats = generate_ROC(model, test_songs, config['train']['batch_size'], results_path=res_dir_name)
+    roc_stats = generate_ROC(model, test_set, config['train']['batch_size'], results_path=res_dir_name)
     
     try:
         thr = config['model']['threshold']
     except KeyError:
-        thr = roc_stats.loc[roc_stats['tpr'] > 0.8, 'thr'].iloc[0]
+        thr = roc_stats.loc[roc_stats['tpr'] > 0.7, 'thr'].iloc[0]
     
     clf = ThresholdClassifier(model, thr)
-    df = generate_metrics(clf, test_songs, config['train']['batch_size'], results_path=res_dir_name)
+    df = generate_metrics(clf, test_set, config['train']['batch_size'], results_path=res_dir_name)
     
-    with open('results/template.html') as f:
-        report_html = f.read()
-        report_html = report_html.replace('__DATA__', json.dumps(config))
-        report_html = report_html.replace('__TABLE__', df.to_html())
-        
-    with open(res_dir_name + '/report.html', 'w') as f:
-        f.write(report_html)
+    generate_report(config, df, res_dir_name)
         
     return res_dir_name
     
     
+def generate_report(config, metrics_df, results_path):
+    with open('results/template.html') as f:
+        report_html = f.read()
+        report_html = report_html.replace('__DATA__', json.dumps(config))
+        
+        with open(config['model']['config_path']) as f2:
+            model_config = json.load(f2)
+        report_html = report_html.replace('__MODELDATA__', json.dumps(model_config))
+        report_html = report_html.replace('__TABLE__', metrics_df.to_html())
+        
+    with open(results_path + '/report.html', 'w') as f:
+        f.write(report_html)
