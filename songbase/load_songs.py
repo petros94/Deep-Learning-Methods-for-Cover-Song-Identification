@@ -60,6 +60,7 @@ def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
 def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
     songs = {}
     for song_dir, feature in zip(songs_dir, features):
+        songs[feature] = {}
         origin_path = song_dir
         entries = os.listdir(origin_path)
         
@@ -85,6 +86,7 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
 def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
     songs = {}
     for song_dir, feature in zip(songs_dir, features):
+        songs[feature] = {}
         origin_path = song_dir
         entries = os.listdir(origin_path)
         
@@ -96,13 +98,13 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
-            songs[dir] = []
+            songs[feature][dir] = []
             for song in subdir:
                 song_id = dir
                 cover_id = song
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
                 repr = mat[mat_feature] # No need to normalize since already normalized
-                songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+                songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
             
     return merge_song_representations(songs)
 
