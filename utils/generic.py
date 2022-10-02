@@ -172,9 +172,9 @@ def scale_dimensions_to_anchor(anchor, repr):
         # No scale needed
         return repr
     
-    factor = (anchor_repr_size/current_repr_size).tolist()
+    output_size = (anchor_repr_size).tolist()
     repr = repr.unsqueeze(0).unsqueeze(0)
-    repr = F.interpolate(repr, scale_factor=factor)
+    repr = F.interpolate(repr, size=output_size)
     repr = repr.squeeze(0).squeeze(0)
     return repr
 
