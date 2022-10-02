@@ -173,9 +173,9 @@ def scale_dimensions_to_anchor(anchor, repr):
         return repr
     
     factor = anchor_repr_size/current_repr_size
-    repr = repr.unsqueeze(1)
+    repr = repr.unsqueeze(0).unsqueeze(0)
     repr = F.interpolate(repr, scale_factor=factor)
-    repr = repr.squeeze(1)
+    repr = repr.squeeze(0).squeeze(0)
     return repr
 
 def repr_triplet_2_segments(triplet, frame_size, scale=(1, 1)):
