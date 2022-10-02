@@ -24,6 +24,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
             segs = []
             for cover in covers:
                 repr = cover['repr']
+                print(repr)
                 frames = segment_and_scale(repr, frame_size=frame_size, scale=scale)
                 segs.append(frames)
                 
