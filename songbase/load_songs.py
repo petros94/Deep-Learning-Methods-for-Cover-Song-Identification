@@ -16,7 +16,7 @@ def from_config(config_path: str = 'songbase/config.json'):
     for dataset in config['train_datasets']:
         songs = load_songs(type=dataset['type'], 
                             songs_dir=dataset['path'], 
-                            feature=config['representation'])
+                            features=config['representation'])
         songs = sample_songs(songs, n_samples=dataset['n_samples'])
         train_songs.update(songs)
         
@@ -24,7 +24,7 @@ def from_config(config_path: str = 'songbase/config.json'):
     for dataset in config['test_datasets']:
         songs = load_songs(type=dataset['type'], 
                             songs_dir=dataset['path'], 
-                            feature=config['representation'])
+                            features=config['representation'])
         songs = sample_songs(songs, n_samples=dataset['n_samples'])
         test_songs.update(songs)
         
