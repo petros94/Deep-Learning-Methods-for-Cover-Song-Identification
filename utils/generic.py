@@ -148,7 +148,6 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
         return frames
     
     elif type(repr) == list:
-        print(repr)
         scaled = [scale_dimensions_to_anchor(repr[0], r) for r in repr]        
         
         # num_channels X num_features X num_samples
@@ -164,6 +163,9 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
         
         
 def scale_dimensions_to_anchor(anchor, repr):
+    repr = torch.tensor(repr)
+    anchor = torch.tensor(anchor)
+    
     anchor_repr_size = torch.tensor(anchor.size())
     current_repr_size = torch.tensor(repr.size())
     
