@@ -64,9 +64,9 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
         entries = os.listdir(origin_path)
         
         if feature == "mfcc":
-            feature = 'XMFCC'
+            mat_feature = 'XMFCC'
         elif feature == "hpcp":
-            feature = 'XHPCP'
+            mat_feature = 'XHPCP'
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
@@ -75,7 +75,7 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
                 song_id = dir
                 cover_id = song.split("_")[0]
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-                repr = mat[feature]
+                repr = mat[mat_feature]
                 repr = np.array(repr)
                 repr = (repr - np.mean(repr)) / np.std(repr)
                 songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
@@ -90,9 +90,9 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
         
         songs = {}
         if feature == "mfcc":
-            feature = 'XMFCC'
+            mat_feature = 'XMFCC'
         elif feature == "hpcp":
-            feature = 'XHPCP'
+            mat_feature = 'XHPCP'
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
@@ -101,7 +101,7 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
                 song_id = dir
                 cover_id = song
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-                repr = mat[feature] # No need to normalize since already normalized
+                repr = mat[mat_feature] # No need to normalize since already normalized
                 songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
             
     return merge_song_representations(songs)
