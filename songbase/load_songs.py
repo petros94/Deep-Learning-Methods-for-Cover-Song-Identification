@@ -155,9 +155,8 @@ def merge_song_representations(songs):
         
         covers = [songs[feature][id] for feature in features]
         for feats in zip(*covers):
-            print(feats)
-            song_id = feats[0]
-            cover_id = feats[1]
+            song_id = feats[0]['song_id']
+            cover_id = feats[0]['cover_id']
             repr = [r['repr'] for r in feats]
             songs_concatenated_features[id].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
     return songs_concatenated_features
