@@ -155,6 +155,7 @@ def merge_song_representations(songs):
         
         covers = [songs[feature][id] for feature in features]
         for feats in zip(*covers):
+            print(feats)
             song_id = feats[0]
             cover_id = feats[1]
             repr = [r['repr'] for r in feats]
