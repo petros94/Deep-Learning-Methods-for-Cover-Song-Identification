@@ -15,7 +15,7 @@
         {
             "type": "covers80",
             "path": [
-                "/content/hpcps80/hpcps80/"
+                "/content/hpcps80/content/hpcps80/"
             ],
             "n_samples": 1000
         }
