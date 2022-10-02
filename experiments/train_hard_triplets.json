@@ -1,16 +1,22 @@
 {
-    "representation": "hpcp",
+    "representation": [
+        "hpcp"
+    ],
     "train_datasets": [
         {
             "type": "covers1000",
-            "path": "/content/hpcps/",
+            "path": [
+                "/content/hpcps/"
+            ],
             "n_samples": 1000
         }
     ],
     "test_datasets": [
         {
             "type": "covers80",
-            "path": "/content/hpcps80/hpcps80/",
+            "path": [
+                "/content/hpcps80/hpcps80/"
+            ],
             "n_samples": 1000
         }
     ],

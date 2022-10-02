@@ -124,8 +124,8 @@ def generate_segments(song: np.array, step=400, overlap=0.5):
     Returns a python list of shape num_segments X num_features X num_samples
     """
     return [
-        song[:, i : step + i]
-        for i in np.arange(0, song.shape[1] - step, int(step * overlap))
+        song[..., i : step + i]
+        for i in np.arange(0, song.shape[-1] - step, int(step * overlap))
     ]
 
 
@@ -133,18 +133,48 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
     """
     Take an np.array of shape num_features x num_samples, split into segments and scale to specific size
     in order to create CNN inputs.
-    """
-    repr = torch.tensor(repr)
     
-    if frame_size is None or repr.size(1) <= frame_size:
-        frames = repr.unsqueeze(0)
-    else:
-        frames = torch.stack(generate_segments(repr, step=frame_size))
-    frames = frames.unsqueeze(1)
-    frames = F.interpolate(frames, scale_factor=scale)
-    frames = frames.squeeze(1)
-    return frames
-
+    Returns: num_segs X num_channels X num_features X num_samples
+    """
+    if type(repr) in (torch.tensor, np.array):
+        repr = torch.tensor(repr)
+        
+        if frame_size is None or repr.size(1) <= frame_size:
+            frames = repr.unsqueeze(0)
+        else:
+            frames = torch.stack(generate_segments(repr, step=frame_size))
+        frames = frames.unsqueeze(1)
+        frames = F.interpolate(frames, scale_factor=scale)
+        return frames
+    
+    elif type(repr) == list:
+        scaled = [scale_dimensions_to_anchor(repr[0], r) for r in repr]        
+        
+        # num_channels X num_features X num_samples
+        song_repr = torch.stack(scaled)
+        # num_segs X num_channels X num_features X num_samples
+        frames = torch.stack(generate_segments(song_repr, step=frame_size))
+        frames = F.interpolate(frames, scale_factor=scale)
+        
+        assert frames.dim() == 4
+        assert frames.size()[1] == len(repr)
+        assert frames.size()[2] == repr.size()[0]
+        return frames
+        
+        
+def scale_dimensions_to_anchor(anchor, repr):
+    anchor_repr_size = torch.tensor(anchor.size())
+    current_repr_size = torch.tensor(repr.size())
+    
+    if (torch.all(anchor_repr_size == current_repr_size)):
+        # No scale needed
+        return repr
+    
+    factor = anchor_repr_size/current_repr_size
+    repr = repr.unsqueeze(1)
+    repr = F.interpolate(repr, scale_factor=factor)
+    repr = repr.squeeze(1)
+    return repr
 
 def repr_triplet_2_segments(triplet, frame_size, scale=(1, 1)):
     """

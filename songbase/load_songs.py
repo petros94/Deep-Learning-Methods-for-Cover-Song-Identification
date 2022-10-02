@@ -31,7 +31,7 @@ def from_config(config_path: str = 'songbase/config.json'):
     return train_songs, test_songs
          
 
-def load_songs(type="covers1000", songs_dir="mfccs/", feature="mfcc"):
+def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
     """
     Load the song database in JSON format.
 
@@ -51,52 +51,110 @@ def load_songs(type="covers1000", songs_dir="mfccs/", feature="mfcc"):
         type: ["covers1000", "covers80"] the dataset type
     """
     if type == "covers1000":
-        return load_songs_covers1000(songs_dir, feature)
+        return load_songs_covers1000(songs_dir, features)
     elif type == "covers80":
-        return load_songs_covers80(songs_dir, feature)
+        return load_songs_covers80(songs_dir, features)
     else:
         raise ValueError("'type' must be one of ['covers1000', 'covers80']")
 
-def load_songs_covers1000(songs_dir="mfccs/", feature="mfcc"):
-    origin_path = songs_dir
-    entries = os.listdir(origin_path)
-    
+def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
     songs = {}
-    if feature == "mfcc":
-        feature = 'XMFCC'
-    elif feature == "hpcp":
-        feature = 'XHPCP'
+    for song_dir, feature in zip(songs_dir, features):
+        origin_path = song_dir
+        entries = os.listdir(origin_path)
+        
+        if feature == "mfcc":
+            feature = 'XMFCC'
+        elif feature == "hpcp":
+            feature = 'XHPCP'
 
-    for dir in entries:
-        subdir = os.listdir(origin_path + dir)
-        songs[dir] = []
-        for song in subdir:
-            song_id = dir
-            cover_id = song.split("_")[0]
-            mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-            repr = mat[feature]
-            repr = np.array(repr)
-            repr = (repr - np.mean(repr)) / np.std(repr)
-            songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
-    return songs
+        for dir in entries:
+            subdir = os.listdir(origin_path + dir)
+            songs[feature][dir] = []
+            for song in subdir:
+                song_id = dir
+                cover_id = song.split("_")[0]
+                mat = scipy.io.loadmat(origin_path + dir + "/" + song)
+                repr = mat[feature]
+                repr = np.array(repr)
+                repr = (repr - np.mean(repr)) / np.std(repr)
+                songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+        
+    return merge_song_representations(songs)
 
-def load_songs_covers80(songs_dir="hpcps80/", feature="hpcp"):
-    origin_path = songs_dir
-    entries = os.listdir(origin_path)
-    
+def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
     songs = {}
-    if feature == "mfcc":
-        feature = 'XMFCC'
-    elif feature == "hpcp":
-        feature = 'XHPCP'
+    for song_dir, feature in zip(songs_dir, features):
+        origin_path = song_dir
+        entries = os.listdir(origin_path)
+        
+        songs = {}
+        if feature == "mfcc":
+            feature = 'XMFCC'
+        elif feature == "hpcp":
+            feature = 'XHPCP'
 
-    for dir in entries:
-        subdir = os.listdir(origin_path + dir)
-        songs[dir] = []
-        for song in subdir:
-            song_id = dir
-            cover_id = song
-            mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-            repr = mat[feature] # No need to normalize since already normalized
-            songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
-    return songs
+        for dir in entries:
+            subdir = os.listdir(origin_path + dir)
+            songs[dir] = []
+            for song in subdir:
+                song_id = dir
+                cover_id = song
+                mat = scipy.io.loadmat(origin_path + dir + "/" + song)
+                repr = mat[feature] # No need to normalize since already normalized
+                songs[dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+            
+    return merge_song_representations(songs)
+
+def merge_song_representations(songs):
+    """Merge song representations.
+
+    Args:
+        songs (dict): songs in the following format: 
+        {
+            'mfcc': {
+                'song_id': [
+                    {"song_id": 'song_id', "cover_id": 'cover_id_1', "repr": repr_11},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_2', "repr": repr_12},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_3', "repr": repr_13}
+                ],
+                'song_id_2': [...]
+                ...
+            },
+            'hpcp': {
+                'song_id': [
+                    {"song_id": 'song_id', "cover_id": 'cover_id_1', "repr": repr_21},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_2', "repr": repr_22},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_3', "repr": repr_23}
+                ],
+                'song_id_2': [...],
+                ...
+            }
+        }
+
+    Returns:
+        concatenated song dict: 
+        {
+            'song_id': [
+                    {"song_id": 'song_id', "cover_id": 'cover_id_1', "repr": [repr_11, repr_21]},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_2', "repr": [repr_12, repr_22]},
+                    {"song_id": 'song_id', "cover_id": 'cover_id_3', "repr": [repr_13, repr_23]}
+            ],
+            'song_id_2': [...]
+            ...
+        }
+    """
+    features = list(songs.keys())
+    anchor_feat = features[0]
+    songs_ids = list(songs[anchor_feat].keys())
+    songs_concatenated_features = {}
+    for id in songs_ids:
+        songs_concatenated_features[id] = []
+        
+        covers = [songs[feature][id] for feature in features]
+        for feats in zip(*covers):
+            song_id = feats[0]
+            cover_id = feats[1]
+            repr = [r['repr'] for r in feats]
+            songs_concatenated_features[id].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+    return songs_concatenated_features

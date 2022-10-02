@@ -14,7 +14,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
         
         """
         {
-            "120345 (song_id)": torch.tensor of size num_segs X num_covers X 1 X num_features X frame_size
+            "120345 (song_id)": torch.tensor of size num_segs X num_covers X num_channels X num_features X frame_size
         }
         """
         song_segs = {}
@@ -33,8 +33,8 @@ class HardTripletDataset(torch.utils.data.Dataset):
             # Crop to minimum length
             segs = [seg[: min_len - 1] for seg in segs]
             
-            # Size num_segs X num_covers X 1 X num_features X frame_size
-            ret = torch.stack(segs, dim=1).unsqueeze(2)
+            # Size num_segs X num_covers X num_channels X num_features X frame_size
+            ret = torch.stack(segs, dim=1)
             song_segs[song_id] = ret
             
         
@@ -56,7 +56,7 @@ class HardTripletDataset(torch.utils.data.Dataset):
                 labels.extend([int_label]*K.size(0))
                 self.total_samples += K.size(0)
                 
-            # Samples are now a tensor of size P*K X 1 X num_features X frame_size
+            # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
             samples = torch.cat(samples)
             labels = torch.tensor(labels)
             
@@ -72,15 +72,15 @@ class HardTripletDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.batches)
     
-    def get_full_songs(self):
-        songs_repr = []
-        labels = []
-        for song_id, covers in self.songs.items():
-            int_label = self.int_mapping[song_id]
-            for cover in covers:
-                repr = cover['repr']
-                frames = segment_and_scale(repr, frame_size=None, scale=(1, 0.33))
-                songs_repr.append(frames)
-                labels.append(int_label)
+    # def get_full_songs(self):
+    #     songs_repr = []
+    #     labels = []
+    #     for song_id, covers in self.songs.items():
+    #         int_label = self.int_mapping[song_id]
+    #         for cover in covers:
+    #             repr = cover['repr']
+    #             frames = segment_and_scale(repr, frame_size=None, scale=(1, 0.33))
+    #             songs_repr.append(frames)
+    #             labels.append(int_label)
                 
-        return songs_repr, labels
+    #     return songs_repr, labels
