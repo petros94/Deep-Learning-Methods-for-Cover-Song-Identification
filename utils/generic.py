@@ -158,7 +158,7 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
         
         assert frames.dim() == 4
         assert frames.size()[1] == len(repr)
-        assert frames.size()[2] == repr.size()[0]
+        assert frames.size()[2] == repr[0].size()[0]
         return frames
         
         
