@@ -1,12 +1,14 @@
 {
     "representation": [
-        "hpcp"
+        "hpcp",
+        "mfcc"
     ],
     "train_datasets": [
         {
             "type": "covers1000",
             "path": [
-                "/content/hpcps/"
+                "/content/hpcps/",
+                "/content/mfccs/"
             ],
             "n_samples": 1000
         }
@@ -15,7 +17,8 @@
         {
             "type": "covers80",
             "path": [
-                "/content/hpcps80/content/hpcps80/"
+                "/content/hpcps80/content/hpcps80/",
+                "/content/mfccs80/content/mfccs80/"
             ],
             "n_samples": 1000
         }
@@ -30,7 +33,7 @@
         "n_batches": 256,
         "songs_per_batch": 32,
         "samples_per_song": 8,
-        "input": "hpcp",
+        "input": "hpcp+mfcc",
         "frame_size": 1600,
         "scale": [
             1,

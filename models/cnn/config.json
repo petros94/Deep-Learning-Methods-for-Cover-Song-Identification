@@ -1,16 +1,21 @@
 {
-    "layers": 4,
-    "in_channels": 1,
+    "layers": 5,
+    "in_channels": 2,
     "channels": [
         32,
-        32,
         64,
+        64,
+        128,
         128
     ],
     "kernel_size": [
         [
             3,
-            7
+            3
+        ],
+        [
+            3,
+            3
         ],
         [
             3,
@@ -26,6 +31,7 @@
         ]
     ],
     "strides": [
+        1,
         1,
         1,
         1,
