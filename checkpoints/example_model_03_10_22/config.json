@@ -1,1 +1,1 @@
-{"layers": 5, "in_channels": 2, "channels": [32, 64, 64, 128, 128], "kernel_size": [[3, 3], [3, 3], [3, 7], [3, 7], [3, 7]], "strides": [1, 1, 1, 1, 1], "padding": 1, "activation": "relu", "pool_size": [1, 2], "drop_prob": 0.2}
+{"layers": 6, "in_channels": 2, "channels": [32, 32, 64, 64, 128, 128], "kernel_size": [[3, 3], [3, 3], [3, 3], [3, 7], [5, 7], [5, 7]], "strides": [1, 1, 1, 1, 1, 1, 1], "padding": 1, "activation": "relu", "pool_size": [1, 2], "drop_prob": 0.2}

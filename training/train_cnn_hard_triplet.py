@@ -118,9 +118,13 @@ def train_hard_triplet_loss(model: torch.nn.Module,
         losses_history['valid'].append(valid_loss/valid_batches)
         losses_history['epoch'].append(epoch)
         
-        if current_patience == patience:
-            print(f"No further improvement after {patience} epochs, breaking.")
-            break
+        if current_patience >= patience:
+            if miner == batch_all_miner:
+                print("Switching to batch hard miner")
+                miner = batch_hard_miner
+            else:
+                print(f"No further improvement after {patience} epochs, breaking.")
+                break
         
     # Load best model
     checkpoint = torch.load(checkpoints_path + "/checkpoint.tar")
