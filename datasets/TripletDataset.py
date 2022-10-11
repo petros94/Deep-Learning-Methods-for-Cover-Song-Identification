@@ -1,13 +1,12 @@
 import imp
-from typing import Mapping
 import torch
 import random
 import numpy as np
-from utils.generic import generate_triplets, get_device, retrieve_repr, repr_triplet_2_segments, frame_idx_2_time, sample_songs, segment_and_scale
+from utils.generic import sample_songs, segment_and_scale
 
-class HardTripletDataset(torch.utils.data.Dataset):
+class TripletDataset(torch.utils.data.Dataset):
     def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33)):
-        print("Creating HardTripletDataset")
+        print("Creating TripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
         self.songs = songs

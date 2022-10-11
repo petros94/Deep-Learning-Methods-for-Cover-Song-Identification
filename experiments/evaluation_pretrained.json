@@ -1,6 +1,7 @@
 {
     "representation": [
-        "hpcp"
+        "hpcp",
+        "mfcc"
     ],
     "train_datasets": [
         {
@@ -27,7 +28,7 @@
         "config_path": "checkpoints/example_model_03_10_22/config.json",
         "checkpoint_path": "checkpoints/example_model_03_10_22/checkpoint.tar"
     },
-    "loss": "hard_triplet",
+    "loss": "triplet",
     "features": {
         "n_batches": 256,
         "songs_per_batch": 32,
