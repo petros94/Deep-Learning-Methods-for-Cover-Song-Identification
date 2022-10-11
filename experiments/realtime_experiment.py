@@ -37,10 +37,10 @@ def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/c
     entries = os.listdir(temp_dir)
     features = {}
     for song in entries:
-        hpcp, mfcc = extractor.extract(os.path.realpath(song))
+        feat = extractor.extract(os.path.realpath(song))
         
         # tensor of size num_segs X num_channels X num_features X num_samples
-        features[song] = segment_and_scale([hpcp, mfcc], frame_size, scale)
+        features[song] = segment_and_scale(feat, frame_size, scale)
 
     # Forward pass
     for song_1, value_1 in features.items():

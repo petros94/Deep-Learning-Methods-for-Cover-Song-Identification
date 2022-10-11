@@ -4,22 +4,23 @@ from essentia import Pool, array
 import essentia.standard as ess
 
 class FeatureExtractor:  
-    def __init__(self, feature=None) -> None:
-        if feature == 'hpcp':
-            self.extract = self.generate_hpcp
-        elif feature == 'mfcc':
-            self.extract = self.generate_mfcc
-        else:
-            self.extract = self.generate_all
+    def __init__(self, features=['hpcp', 'mfcc']) -> None:
+        self.features = features
+        self.extract = self.generate_all
         
     def generate_all(self, filename):
         hopSize=512
         (XAudio, Fs) = self.getAudioLibrosa(filename)
-        XMFCC = self.getMFCCsLibrosa(XAudio, Fs, 4*hopSize, hopSize, lifterexp = 0.6, NMFCC = 20)
-        XMFCC = (XMFCC - np.mean(XMFCC)) / np.std(XMFCC)
-        XHPCP = self.getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
-        XHPCP = (XHPCP - np.mean(XHPCP)) / np.std(XHPCP)
-        return XHPCP, XMFCC
+        
+        output = []
+        for feature in self.features:
+            if feature == 'hpcp':
+                res = self.getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
+            elif feature == 'mfcc':
+                res = self.getMFCCsLibrosa(XAudio, Fs, 4*hopSize, hopSize, lifterexp = 0.6, NMFCC = 20)
+            res = (res - np.mean(res)) / np.std(res)
+            output.append(res)
+        return output
     
     def generate_mfcc(self, filename):
         hopSize=512
