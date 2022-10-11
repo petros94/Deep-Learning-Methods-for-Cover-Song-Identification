@@ -7,6 +7,7 @@ import os
 import uuid
 import json
 import torch 
+import shutil
 
 from utils.generic import get_device, segment_and_scale
 
@@ -27,6 +28,7 @@ def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/c
     # Download songs to temp dir
     downloader = YoutubeDownloader()
     temp_dir = tmp_base_dir + "/" + str(uuid.uuid4())
+    os.makedirs(temp_dir)
     for link in links:
         downloader.download(path=temp_dir, link=link)
         
@@ -47,6 +49,9 @@ def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/c
             x_1 = torch.tensor(value_1[idx]).unsqueeze(0).to(device)
             x_2 = torch.tensor(value_2[idx]).unsqueeze(0).to(device)
             print(f"Song 1: {song_1}, Song 2: {song_2}, are covers: {clf(x_1, x_2)}")
+            
+    # Remove temp dir
+    shutil.rmtree(temp_dir)
         
     
         
