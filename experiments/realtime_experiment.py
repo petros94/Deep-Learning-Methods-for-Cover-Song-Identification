@@ -42,13 +42,14 @@ def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/c
         # tensor of size num_segs X num_channels X num_features X num_samples
         features[song] = segment_and_scale([hpcp, mfcc], frame_size, scale)
 
-    print(features)
     # Forward pass
     for song_1, value_1 in features.items():
         for song_2, value_2 in features.items():
             x_1 = torch.tensor(value_1[idx]).unsqueeze(0).to(device)
             x_2 = torch.tensor(value_2[idx]).unsqueeze(0).to(device)
-            print(f"Song 1: {song_1}, Song 2: {song_2}, are covers: {clf(x_1, x_2)}")
+            
+            pred, dist = clf(x_1, x_2)
+            print(f"Song 1: {song_1}, Song 2: {song_2}, are covers: {pred.item()==True}, distance: {dist.item()}")
             
     # Remove temp dir
     shutil.rmtree(temp_dir)
