@@ -34,11 +34,11 @@ def execute_single(config_path: str = 'experiments/experiment_config.json'):
     
     train_songs, valid_songs = split_songs(train_songs, config['train']['train_perc'])
     
-    train_set = make_dataset(train_songs, config_path=config_path, type="hard_triplet")
-    valid_set = make_dataset(valid_songs, config_path=config_path, type="hard_triplet")
+    train_set = make_dataset(train_songs, config_path=config_path, type=config['loss'])
+    valid_set = make_dataset(valid_songs, config_path=config_path, type=config['loss'])
 
     if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type="hard_triplet")
+        test_set = make_dataset(test_songs, config_path=config_path, type=config['loss'])
     else:
         print("No test set provided, validation set will be used")
         test_set = valid_set
@@ -81,7 +81,7 @@ def evaluate_model(config_path: str = 'experiments/experiment_config.json'):
         
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    test_set = make_dataset(test_songs, config_path=config_path, type='hard_triplet')
+    test_set = make_dataset(test_songs, config_path=config_path, type=config['loss'])
     print("Created eval set: {} samples".format(len(test_songs)))
     
     model = make_model(config_path=config_path)
