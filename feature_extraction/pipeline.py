@@ -20,7 +20,7 @@ def read_csv_and_download_songs(csv_path, output_base_path):
         # Create folder
         song_name = row[COL_NAMES['song_name']]
         song_base_path = output_base_path + "/" + song_name
-        os.mkdir(song_base_path)
+        os.makedirs(song_base_path, exist_ok=True)
         
         # Download all covers to folder
         for cover in list(row)[1:]:
