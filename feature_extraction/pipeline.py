@@ -40,12 +40,12 @@ def convert_songs_to_features(feature="hpcp",
         feature = 'XHPCP'
 
     for dir in entries:
-        subdir = os.listdir(origin_path + dir)
+        subdir = os.listdir(origin_path + "/" + dir)
         songs[dir] = []
         for song in subdir:
             song_id = dir
             cover_id = song.split('.mp3')[0]
             mat = {}
-            mat[feature] = extractor.extract(origin_path + dir + "/" + song)
-            os.makedirs(os.path.dirname(save_path + dir + "/" + song), exist_ok=True)
-            savemat(save_path + dir + "/" + cover_id + '.mat', mat)
+            mat[feature] = extractor.extract(origin_path + "/"+ dir + "/" + song)
+            os.makedirs(os.path.dirname(save_path + "/" + dir + "/" + song), exist_ok=True)
+            savemat(save_path + "/" + dir + "/" + cover_id + '.mat', mat)
