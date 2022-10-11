@@ -159,6 +159,8 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
         assert frames.dim() == 4
         assert frames.size()[1] == len(repr)
         return frames
+    else:
+        raise ValueError("unsupported repr type")
         
         
 def scale_dimensions_to_anchor(anchor, repr):
