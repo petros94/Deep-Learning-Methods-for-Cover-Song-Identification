@@ -33,7 +33,7 @@ def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/c
         downloader.download(path=temp_dir, link=link)
         
     # Extract features
-    extractor = FeatureExtractor()
+    extractor = FeatureExtractor(features=config['representation'])
     entries = os.listdir(temp_dir)
     features = {}
     for song in entries:
