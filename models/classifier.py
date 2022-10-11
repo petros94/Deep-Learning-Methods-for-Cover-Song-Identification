@@ -1,5 +1,6 @@
 from torch import nn
 import torch
+from math import sqrt
 
 class ThresholdClassifier(nn.Module):
     def __init__(self, model, D) -> None:
@@ -11,5 +12,5 @@ class ThresholdClassifier(nn.Module):
         out1 = self.model(x1)
         out2 = self.model(x2)
         dist = torch.norm(out1 - out2, dim=1)
-        inv = 1/dist
+        inv = 1/sqrt(dist)
         return (inv > self.D)*1, dist
