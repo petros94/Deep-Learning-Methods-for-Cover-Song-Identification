@@ -26,7 +26,8 @@
     "model": {
         "type": "cnn",
         "config_path": "checkpoints/example_model_03_10_22/config.json",
-        "checkpoint_path": "checkpoints/example_model_03_10_22/checkpoint.tar"
+        "checkpoint_path": "checkpoints/example_model_03_10_22/checkpoint.tar",
+        "threshold": 0.13
     },
     "loss": "triplet",
     "features": {

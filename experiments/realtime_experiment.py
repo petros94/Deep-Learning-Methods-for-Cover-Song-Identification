@@ -1,0 +1,53 @@
+from re import L
+from feature_extraction.downloader import YoutubeDownloader
+from feature_extraction.extraction import FeatureExtractor
+from models.classifier import ThresholdClassifier
+from models.factory import make_model
+import os
+import uuid
+import json
+import torch 
+
+from utils.generic import get_device, segment_and_scale
+
+def download_songs_and_inference(config_path: str, links: list, tmp_base_dir="/content"): 
+    device = get_device()
+    with open(config_path, "r") as f:
+        config = json.load(f)
+               
+    model = make_model(config_path=config_path)
+    thr = config['model']['threshold']
+    clf = ThresholdClassifier(model, thr)
+    clf.eval()
+    
+    scale = (1, 0.2)
+    frame_size = 4400
+    idx = 0
+    
+    # Download songs to temp dir
+    downloader = YoutubeDownloader()
+    temp_dir = tmp_base_dir + "/" + str(uuid.uuid4())
+    for link in links:
+        downloader.download(path=temp_dir, link=link)
+        
+    # Extract features
+    extractor = FeatureExtractor()
+    entries = os.listdir(temp_dir)
+    features = {}
+    for song in entries:
+        hpcp, mfcc = extractor.extract(os.path.realpath(song))
+        
+        # tensor of size num_segs X num_channels X num_features X num_samples
+        features[song] = segment_and_scale((hpcp, mfcc), frame_size, scale)
+
+
+    # Forward pass
+    for song_1, value_1 in features.items():
+        for song_2, value_2 in features.items():
+            x_1 = torch.tensor(value_1[idx]).unsqueeze(0).to(device)
+            x_2 = torch.tensor(value_2[idx]).unsqueeze(0).to(device)
+            print(f"Song 1: {song_1}, Song 2: {song_2}, are covers: {clf(x_1, x_2)}")
+        
+    
+        
+    
