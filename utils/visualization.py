@@ -17,7 +17,7 @@ def visualize_frame_standalone(songs, song_id, cover_id, frame_idx, frame_size, 
   time_start, time_end, duration = frame_idx_2_time(frame_idx, frame_size, 0.5*frame_size)
 
   print(f"Song id: {cover_id}, timeframe: {time_start} - {time_end}, duration: {duration}")
-  f = px.imshow(frame, aspect='auto', range_color=[-3, 3], width=400, height=400)
+  f = px.imshow(frame[0], aspect='auto', range_color=[-3, 3], width=400, height=400)
   f.show()
 
 

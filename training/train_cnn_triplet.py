@@ -67,9 +67,9 @@ def train_triplet_loss(model: torch.nn.Module,
             optimizer.step()
 
             epoch_loss += loss.item()
+            mean_triplets += miner.num_triplets
 
             if i%16==0:
-                mean_triplets += miner.num_triplets
                 print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
         print('Evaluating model')
