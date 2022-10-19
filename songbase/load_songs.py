@@ -99,6 +99,8 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
             mat_feature = 'XMFCC'
         elif feature == "hpcp":
             mat_feature = 'XHPCP'
+        elif feature == "cens":
+            mat_feature = 'cens'
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
