@@ -4,23 +4,33 @@ from essentia import Pool, array
 import essentia.standard as ess
 
 class FeatureExtractor:  
-    def __init__(self, features=['hpcp', 'mfcc']) -> None:
+    def __init__(self, features='cens') -> None:
         self.features = features
-        self.extract = self.generate_all
         
-    def generate_all(self, filename):
-        hopSize=512
-        (XAudio, Fs) = self.getAudioLibrosa(filename)
+        if features == 'cens':
+            self.extract = self.generate_cens
+        elif features == 'hpcp':
+            self.extract = self.generate_hpcp
+        elif features == 'mfcc':
+            self.extract = self.generate_mfcc
         
-        output = []
-        for feature in self.features:
-            if feature == 'hpcp':
-                res = self.getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
-            elif feature == 'mfcc':
-                res = self.getMFCCsLibrosa(XAudio, Fs, 4*hopSize, hopSize, lifterexp = 0.6, NMFCC = 20)
-            res = (res - np.mean(res)) / np.std(res)
-            output.append(res)
-        return output
+        
+    # def generate_all(self, filename):
+    #     hopSize=512
+    #     (XAudio, Fs) = self.getAudioLibrosa(filename)
+        
+    #     output = []
+    #     for feature in self.features:
+    #         if feature == 'hpcp':
+    #             res = self.getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
+    #             res = (res - np.mean(res)) / np.std(res)
+    #         elif feature == 'mfcc':
+    #             res = self.getMFCCsLibrosa(XAudio, Fs, 4*hopSize, hopSize, lifterexp = 0.6, NMFCC = 20)
+    #             res = (res - np.mean(res)) / np.std(res)
+    #         elif feature == 'cens':
+    #             res = self.getCENSLibrosa(XAudio)
+    #         output.append(res)
+    #     return output
     
     def generate_mfcc(self, filename):
         hopSize=512
@@ -35,6 +45,11 @@ class FeatureExtractor:
         XHPCP = self.getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
         XHPCP = (XHPCP - np.mean(XHPCP)) / np.std(XHPCP)
         return XHPCP
+    
+    def generate_cens(self, filename):
+        (XAudio, Fs) = self.getAudioLibrosa(filename)
+        XCENS = self.getCENSLibrosa(XAudio)
+        return XCENS
        
     @staticmethod 
     def getAudioLibrosa(filename):
@@ -94,5 +109,10 @@ class FeatureExtractor:
         coeffs[0] = 1
         X = coeffs[:, None]*X
         X = np.array(X, dtype = np.float32)
+        return X
+    
+    @staticmethod
+    def getCENSLibrosa(XAudio):
+        X = librosa.feature.chroma_cens(XAudio, hop_length=512)
         return X
 
