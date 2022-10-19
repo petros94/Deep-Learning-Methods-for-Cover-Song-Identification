@@ -47,6 +47,7 @@ def convert_songs_to_features(feature="hpcp",
             cover_id = song.split('.mp3')[0]
             save_path_file = save_path + "/" + dir + "/" + cover_id + '.mat'
             if os.path.exists(save_path_file):
+                print("song: {song_id}/{cover_id} exists, skipping...")
                 continue
             
             mat = {}
