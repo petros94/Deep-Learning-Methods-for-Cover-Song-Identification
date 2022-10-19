@@ -114,5 +114,6 @@ class FeatureExtractor:
     @staticmethod
     def getCENSLibrosa(XAudio):
         X = librosa.feature.chroma_cens(XAudio, hop_length=512)
+        X = np.array(X, dtype = np.float32)
         return X
 
