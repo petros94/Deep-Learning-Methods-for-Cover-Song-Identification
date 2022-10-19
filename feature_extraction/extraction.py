@@ -49,6 +49,7 @@ class FeatureExtractor:
     def generate_cens(self, filename):
         (XAudio, Fs) = self.getAudioLibrosa(filename)
         XCENS = self.getCENSLibrosa(XAudio)
+        XCENS = (XCENS - np.mean(XCENS)) / np.std(XCENS)
         return XCENS
        
     @staticmethod 

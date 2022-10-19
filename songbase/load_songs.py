@@ -64,14 +64,12 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
         origin_path = song_dir
         entries = os.listdir(origin_path)
         
-        normalize = True
         if feature == "mfcc":
             mat_feature = 'XMFCC'
         elif feature == "hpcp":
             mat_feature = 'XHPCP'
         elif feature == "cens":
             mat_feature = 'XCENS'
-            normalize = False
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
@@ -82,8 +80,7 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
                 repr = mat[mat_feature]
                 repr = np.array(repr)
-                if normalize:
-                    repr = (repr - np.mean(repr)) / np.std(repr)
+                repr = (repr - np.mean(repr)) / np.std(repr)
                 songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
         
     return merge_song_representations(songs)

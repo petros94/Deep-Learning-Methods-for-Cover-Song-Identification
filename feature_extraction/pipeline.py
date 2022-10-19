@@ -38,6 +38,8 @@ def convert_songs_to_features(feature="hpcp",
         feature = 'XMFCC'
     elif feature == "hpcp":
         feature = 'XHPCP'
+    elif feature == "cens":
+        feature = 'XCENS'
 
     for dir in entries:
         subdir = os.listdir(origin_path + "/" + dir)
