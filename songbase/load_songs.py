@@ -110,6 +110,7 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
                 cover_id = song
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
                 repr = mat[mat_feature] # No need to normalize since already normalized
+                repr = np.array(repr)
                 songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
             
     return merge_song_representations(songs)
