@@ -67,7 +67,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
     print(f"Classifier threshold: {clf.D}")
     clf.eval()
     device = get_device()
-    clf.to(device)
+    clf.type(torch.FloatTensor).to(device)
     y_pred = []
     y_true = []
     miner = RandomTripletMiner
@@ -75,7 +75,7 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
         for i in range(len(data_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = data_set[i]
-            data = data.to(device)
+            data = data.type(torch.FloatTensor).to(device)
             
             a, p, n = miner(None, labels)
             
