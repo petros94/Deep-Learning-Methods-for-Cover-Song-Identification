@@ -20,7 +20,7 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
         for i in range(len(data_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = data_set[i]
-            data = data.to(device)
+            data = data.type(torch.FloatTensor).to(device)
             
             embeddings = model(data)
             a, p, n = miner(embeddings, labels)
