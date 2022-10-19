@@ -122,7 +122,6 @@ def train_triplet_loss(model: torch.nn.Module,
                 print("Switching to batch hard miner")
                 miner = batch_hard_miner
                 current_patience = 0
-                patience = 5
             else:
                 print(f"No further improvement after {patience} epochs, breaking.")
                 break
