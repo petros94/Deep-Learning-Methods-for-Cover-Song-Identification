@@ -137,7 +137,7 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
     Returns: num_segs X num_channels X num_features X num_samples
     """
     if type(repr) in (torch.tensor, np.ndarray):
-        repr = torch.tensor(repr)
+        repr = torch.tensor(repr, dtype=float)
         
         if frame_size is None or repr.size(1) <= frame_size:
             frames = repr.unsqueeze(0)
