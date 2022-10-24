@@ -1,12 +1,12 @@
 {
     "representation": [
-        "cens"
+        "hpcp"
     ],
     "train_datasets": [
         {
             "type": "covers1000",
             "path": [
-                "/content/cens/"
+                "/content/hpcp/"
             ],
             "n_samples": 1000
         }
@@ -15,7 +15,7 @@
         {
             "type": "covers80",
             "path": [
-                "/content/cens80/content/cens80/"
+                "/content/hpcps80/content/hpcps80/"
             ],
             "n_samples": 1000
         }
@@ -30,7 +30,7 @@
         "n_batches": 256,
         "songs_per_batch": 32,
         "samples_per_song": 8,
-        "input": "cens",
+        "input": "hpcp",
         "frame_size": 1600,
         "scale": [
             1,
