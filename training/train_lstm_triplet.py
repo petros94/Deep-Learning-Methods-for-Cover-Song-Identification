@@ -63,9 +63,6 @@ def train_triplet_loss(
 
             optimizer.zero_grad()
 
-            data = data.squeeze(1)
-            data = data.permute(2, 0, 1)
-
             embeddings = model(data)
             triplets = miner(embeddings, labels)
 
@@ -89,9 +86,6 @@ def train_triplet_loss(
                 # N X 1 X num_feats X num_samples, N
                 (data, labels) = valid_set[i]
                 data = data.to(device)
-
-                data = data.squeeze(1)
-                data = data.permute(2, 0, 1)
 
                 embeddings = model(data)
                 a, p, n = valid_miner(embeddings, labels)
