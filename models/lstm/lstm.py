@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 import json
+from torch.nn import functional as F
 
 
 class LSTM(nn.Module):
@@ -28,6 +29,14 @@ class LSTM(nn.Module):
         # self.fc1 = nn.Linear(in_features=(2 if bidirectional else 1)*self.hidden_size, out_features=128)
         # self.fc2 = nn.Linear(128, out_features=output_size)
 
+    def attention(self, lstm_output, final_state):
+        lstm_output = lstm_output.permute(1, 0, 2)
+        merged_state = torch.cat([s for s in final_state], 1)
+        merged_state = merged_state.squeeze(0).unsqueeze(2)
+        weights = torch.bmm(lstm_output, merged_state)
+        weights = F.softmax(weights.squeeze(2), dim=1).unsqueeze(2)
+        return torch.bmm(torch.transpose(lstm_output, 1, 2), weights).squeeze(2)
+
     def forward(self, x):
         """Forwars
 
@@ -40,12 +49,13 @@ class LSTM(nn.Module):
         x = x.squeeze(1)
         x = x.permute(2, 0, 1)
         out_packed, (h, c) = self.lstm(x)
-        cat = (
-            torch.cat((h[-1, :, :], h[-2, :, :]), dim=1)
-            if self.bidirectional
-            else h[-1, :, :]
-        )
-        x = self.fc(cat)
+        attn_output = self.attention(out_packed, h)
+        # cat = (
+        #     torch.cat((h[-1, :, :], h[-2, :, :]), dim=1)
+        #     if self.bidirectional
+        #     else h[-1, :, :]
+        # )
+        x = self.fc(attn_output.squeeze(0))
         return x.view(-1, self.output_size)
 
 
