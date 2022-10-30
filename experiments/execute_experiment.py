@@ -72,8 +72,10 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
         model, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
 
-    print("Calculate MRR")
+    print(f"MAP: {round(mean_average_precision,3)}")
+
     mrr = mean_reprocical_rank(model, test_set)
+    print(f"MRR: {round(mrr, 3)}")
 
     try:
         thr = config["model"]["threshold"]
