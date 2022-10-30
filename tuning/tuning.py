@@ -138,7 +138,7 @@ def mean_reprocical_rank(model, data_set: torch.utils.data.Dataset):
                 sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
                 rank = 1
-                for test_label in sorted_labels_by_dist:
+                for test_label in sorted_labels_by_dist[1:]:
                     if lab == test_label:
                         break
                     rank += 1
