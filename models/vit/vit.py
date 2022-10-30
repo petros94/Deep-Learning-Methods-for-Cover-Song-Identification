@@ -24,7 +24,7 @@ class ViT(nn.Module):
         x = F.interpolate(x, size=self.image_size)
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
-        outputs = outputs.last_hidden_state[:, 0, :].squeeze(1)
+        outputs = outputs.pooler_output
         return outputs
 
 
