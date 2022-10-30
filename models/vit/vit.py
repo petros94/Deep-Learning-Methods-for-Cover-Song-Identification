@@ -17,7 +17,9 @@ class ViT(nn.Module):
     def forward(self, x):
         x = F.interpolate(x, size=self.image_size)
         inputs = {"pixel_values": x}
-        return self.model(**inputs)
+        outputs = self.model(**inputs)
+        outputs = outputs.last_hidden_state[:, 0, :].squeeze(1)
+        return outputs
 
 
 def from_config(config_path: str):
