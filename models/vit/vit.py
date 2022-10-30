@@ -25,7 +25,7 @@ class ViT(nn.Module):
         )
         self.model = ViTModel(self.configuration)
         self.image_size = image_size
-        self.fc = nn.Linear(in_features=768, out_features=128)
+        self.fc = nn.Linear(in_features=hidden_size, out_features=128)
 
     def forward(self, x):
         x = F.interpolate(x, size=self.image_size)
