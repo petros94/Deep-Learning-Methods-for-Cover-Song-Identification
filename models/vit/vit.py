@@ -19,13 +19,14 @@ class ViT(nn.Module):
         )
         self.model = ViTModel(self.configuration)
         self.image_size = image_size
+        self.fc = nn.Linear(in_features=768, out_features=128)
 
     def forward(self, x):
         x = F.interpolate(x, size=self.image_size)
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
         outputs = outputs.pooler_output
-        return outputs
+        return self.fc(outputs)
 
 
 def from_config(config_path: str):
