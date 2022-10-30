@@ -7,7 +7,12 @@ from torch.nn import functional as F
 
 class ViT(nn.Module):
     def __init__(
-        self, patch_size=4, image_size=128, num_hidden_layers=12, num_attention_heads=12
+        self,
+        patch_size=4,
+        image_size=128,
+        num_hidden_layers=12,
+        num_attention_heads=12,
+        hidden_size=768,
     ) -> None:
         super().__init__()
         self.configuration = ViTConfig(
@@ -16,6 +21,7 @@ class ViT(nn.Module):
             image_size=image_size,
             num_hidden_layers=num_hidden_layers,
             num_attention_heads=num_attention_heads,
+            hidden_size=hidden_size,
         )
         self.model = ViTModel(self.configuration)
         self.image_size = image_size
@@ -42,4 +48,5 @@ def from_config(config_path: str):
             image_size=config["image_size"],
             num_hidden_layers=config["num_hidden_layers"],
             num_attention_heads=config["num_attention_heads"],
+            hidden_size=config["hidden_size"],
         )
