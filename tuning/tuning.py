@@ -1,5 +1,12 @@
 import numpy as np
-from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, precision_recall_fscore_support, accuracy_score
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    roc_curve,
+    auc,
+    precision_recall_fscore_support,
+    accuracy_score,
+    average_precision_score,
+)
 import plotly.express as px
 import matplotlib.pyplot as plt
 import torch
@@ -9,7 +16,10 @@ import pandas as pd
 from utils.generic import get_device
 from training.miners import RandomTripletMiner
 
-def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
+
+def generate_ROC(
+    model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str
+):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
@@ -21,49 +31,51 @@ def generate_ROC(model, data_set: torch.utils.data.Dataset, batch_size: int, res
             # N X 1 X num_feats X num_samples, N
             (data, labels) = data_set[i]
             data = data.type(torch.FloatTensor).to(device)
-            
+
             embeddings = model(data)
             a, p, n = miner(embeddings, labels)
-            
+
             pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
             neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
-            
+
             distances.append(pos_dist)
-            clf_labels.extend([1]*pos_dist.size()[0])
-            
+            clf_labels.extend([1] * pos_dist.size()[0])
+
             distances.append(neg_dist)
-            clf_labels.extend([0]*neg_dist.size()[0])
-            
+            clf_labels.extend([0] * neg_dist.size()[0])
+
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
-    fpr, tpr, thresholds = roc_curve(clf_labels, 1/np.sqrt(distances))
-    df = pd.DataFrame({'tpr': tpr, 'fpr': fpr, 'thr': thresholds})
+    fpr, tpr, thresholds = roc_curve(clf_labels, 1 / np.sqrt(distances))
+    ap = average_precision_score(clf_labels, 1 / np.sqrt(distances))
+    df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})
     roc_auc = auc(fpr, tpr)
-    
+
     fig = px.area(
         data_frame=df,
-        x='fpr', y='tpr',
-        title=f'ROC Curve (AUC={roc_auc:.4f})',
-        labels=dict(x='False Positive Rate', y='True Positive Rate'),
-        hover_data=['thr'],
-        width=700, height=500
+        x="fpr",
+        y="tpr",
+        title=f"ROC Curve (AUC={roc_auc:.4f})",
+        labels=dict(x="False Positive Rate", y="True Positive Rate"),
+        hover_data=["thr"],
+        width=700,
+        height=500,
     )
-    fig.add_shape(
-        type='line', line=dict(dash='dash'),
-        x0=0, x1=1, y0=0, y1=1
-    )
+    fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1)
 
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
-    fig.update_xaxes(constrain='domain')
-        
-    if results_path:
-        df.to_csv(results_path + '/thresholds.csv')
-        fig.write_image(results_path + '/roc.png')
-        
-    fig.show()
-    return df
-            
+    fig.update_xaxes(constrain="domain")
 
-def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str):
+    if results_path:
+        df.to_csv(results_path + "/thresholds.csv")
+        fig.write_image(results_path + "/roc.png")
+
+    fig.show()
+    return df, ap
+
+
+def generate_metrics(
+    clf, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str
+):
     print(f"Classifier threshold: {clf.D}")
     clf.eval()
     device = get_device()
@@ -76,33 +88,60 @@ def generate_metrics(clf, data_set: torch.utils.data.Dataset, batch_size: int, r
             # N X 1 X num_feats X num_samples, N
             (data, labels) = data_set[i]
             data = data.type(torch.FloatTensor).to(device)
-            
+
             a, p, n = miner(None, labels)
-            
+
             pos_preds, _ = clf(data[a], data[p])
             pos_preds = pos_preds.cpu().tolist()
             y_pred.extend(pos_preds)
-            y_true.extend([1]*len(pos_preds))
-            
+            y_true.extend([1] * len(pos_preds))
+
             neg_preds, _ = clf(data[a], data[n])
             neg_preds = neg_preds.cpu().tolist()
             y_pred.extend(neg_preds)
-            y_true.extend([0]*len(neg_preds))
-                            
+            y_true.extend([0] * len(neg_preds))
+
     pr, rec, f1, sup = precision_recall_fscore_support(y_true, y_pred)
     acc = accuracy_score(y_true, y_pred)
-    df = pd.DataFrame({'pre': pr, 'rec': rec, 'f1': f1, 'sup': sup})
+    df = pd.DataFrame({"pre": pr, "rec": rec, "f1": f1, "sup": sup})
     ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
-    
+
     if results_path:
-        df.to_csv(results_path + '/metrics.csv')
-        plt.savefig(results_path + '/confusion.png')
-        
-    print(f'Accuracy is: {acc}')
+        df.to_csv(results_path + "/metrics.csv")
+        plt.savefig(results_path + "/confusion.png")
+
+    print(f"Accuracy is: {acc}")
     print(df)
     plt.show()
     return df
-        
-        
-        
-    
+
+
+def mean_reprocical_rank(model, data_set: torch.utils.data.Dataset):
+    model.eval()
+    device = get_device()
+    model.type(torch.FloatTensor).to(device)
+    distances = []
+    clf_labels = []
+    with torch.no_grad():
+        for i in range(len(data_set)):
+            # N X 1 X num_feats X num_samples, N
+            (data, labels) = data_set[i]
+            data = data.type(torch.FloatTensor).to(device)
+
+            embeddings = model(data)
+
+            # Size N x N
+            rr = []
+            distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+            for d, lab in zip(distance_matrix, labels):
+                sorted_ids_by_dist = d.argsort()
+                sorted_labels_by_dist = labels[sorted_ids_by_dist]
+
+                rank = 1
+                for test_label in sorted_labels_by_dist:
+                    if lab == test_label:
+                        break
+                    rank += 1
+                rr.append(1 / rank)
+        mrr = np.mean(rr)
+        return mrr

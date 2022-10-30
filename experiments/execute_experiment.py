@@ -10,7 +10,7 @@ from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import split_songs
 from utils.visualization import visualize_losses
-from tuning.tuning import generate_ROC, generate_metrics
+from tuning.tuning import generate_ROC, generate_metrics, mean_reprocical_rank
 
 
 def execute_single(config_path: str = "experiments/experiment_config.json"):
@@ -68,9 +68,12 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     visualize_losses(losses, file_path=res_dir_name)
 
     print("Plot ROC and calculate metrics")
-    roc_stats = generate_ROC(
+    roc_stats, mean_average_precision = generate_ROC(
         model, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
+
+    print("Calculate MRR")
+    mrr = mean_reprocical_rank(model, test_set)
 
     try:
         thr = config["model"]["threshold"]
@@ -83,7 +86,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
         clf, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
 
-    generate_report(config, df, res_dir_name)
+    generate_report(config, df, mean_average_precision, mrr, res_dir_name)
 
     return res_dir_name, chk_dir_name
 
@@ -105,9 +108,12 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
     model = make_model(config_path=config_path)
 
     print("Plot ROC and calculate metrics")
-    roc_stats = generate_ROC(
+    roc_stats, mean_average_precision = generate_ROC(
         model, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
+
+    print("Calculate MRR")
+    mrr = mean_reprocical_rank(model, test_set)
 
     try:
         thr = config["model"]["threshold"]
@@ -119,12 +125,12 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
         clf, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
 
-    generate_report(config, df, res_dir_name)
+    generate_report(config, df, mean_average_precision, mrr, res_dir_name)
 
     return res_dir_name
 
 
-def generate_report(config, metrics_df, results_path):
+def generate_report(config, metrics_df, mean_average_precision, mrr, results_path):
     with open("results/template.html") as f:
         report_html = f.read()
         report_html = report_html.replace("__DATA__", json.dumps(config))
@@ -133,6 +139,8 @@ def generate_report(config, metrics_df, results_path):
             model_config = json.load(f2)
         report_html = report_html.replace("__MODELDATA__", json.dumps(model_config))
         report_html = report_html.replace("__TABLE__", metrics_df.to_html())
+        report_html = report_html.replace("__MAP__", round(mean_average_precision, 3))
+        report_html = report_html.replace("__MRR__", round(mrr, 3))
 
     with open(results_path + "/report.html", "w") as f:
         f.write(report_html)
