@@ -111,9 +111,10 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
     roc_stats, mean_average_precision = generate_ROC(
         model, test_set, config["train"]["batch_size"], results_path=res_dir_name
     )
+    print(f"MAP: {round(mean_average_precision,3)}")
 
-    print("Calculate MRR")
     mrr = mean_reprocical_rank(model, test_set)
+    print(f"MRR: {round(mrr, 3)}")
 
     try:
         thr = config["model"]["threshold"]
@@ -139,8 +140,10 @@ def generate_report(config, metrics_df, mean_average_precision, mrr, results_pat
             model_config = json.load(f2)
         report_html = report_html.replace("__MODELDATA__", json.dumps(model_config))
         report_html = report_html.replace("__TABLE__", metrics_df.to_html())
-        report_html = report_html.replace("__MAP__", round(mean_average_precision, 3))
-        report_html = report_html.replace("__MRR__", round(mrr, 3))
+        report_html = report_html.replace(
+            "__MAP__", str(round(mean_average_precision, 3))
+        )
+        report_html = report_html.replace("__MRR__", str(round(mrr, 3)))
 
     with open(results_path + "/report.html", "w") as f:
         f.write(report_html)
