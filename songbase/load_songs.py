@@ -1,4 +1,4 @@
-import os 
+import os
 import random
 import time
 import json
@@ -8,28 +8,33 @@ import scipy.io
 from torch.nn import functional as F
 from utils.generic import sample_songs
 
-def from_config(config_path: str = 'songbase/config.json'):
+
+def from_config(config_path: str = "songbase/config.json"):
     with open(config_path, "r") as f:
         config = json.load(f)
-        
+
     train_songs = {}
-    for dataset in config['train_datasets']:
-        songs = load_songs(type=dataset['type'], 
-                            songs_dir=dataset['path'], 
-                            features=config['representation'])
-        songs = sample_songs(songs, n_samples=dataset['n_samples'])
+    for dataset in config["train_datasets"]:
+        songs = load_songs(
+            type=dataset["type"],
+            songs_dir=dataset["path"],
+            features=config["representation"],
+        )
+        songs = sample_songs(songs, n_samples=dataset["n_samples"])
         train_songs.update(songs)
-        
+
     test_songs = {}
-    for dataset in config['test_datasets']:
-        songs = load_songs(type=dataset['type'], 
-                            songs_dir=dataset['path'], 
-                            features=config['representation'])
-        songs = sample_songs(songs, n_samples=dataset['n_samples'])
+    for dataset in config["test_datasets"]:
+        songs = load_songs(
+            type=dataset["type"],
+            songs_dir=dataset["path"],
+            features=config["representation"],
+        )
+        songs = sample_songs(songs, n_samples=dataset["n_samples"])
         test_songs.update(songs)
-        
+
     return train_songs, test_songs
-         
+
 
 def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
     """
@@ -46,7 +51,7 @@ def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
             ...
         ]
     }
-    
+
     Arguments:
         type: ["covers1000", "covers80"] the dataset type
     """
@@ -57,19 +62,20 @@ def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
     else:
         raise ValueError("'type' must be one of ['covers1000', 'covers80']")
 
+
 def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
     songs = {}
     for song_dir, feature in zip(songs_dir, features):
         songs[feature] = {}
         origin_path = song_dir
         entries = os.listdir(origin_path)
-        
+
         if feature == "mfcc":
-            mat_feature = 'XMFCC'
+            mat_feature = "XMFCC"
         elif feature == "hpcp":
-            mat_feature = 'XHPCP'
+            mat_feature = "XHPCP"
         elif feature == "cens":
-            mat_feature = 'XCENS'
+            mat_feature = "XCENS"
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
@@ -81,42 +87,58 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
                 repr = mat[mat_feature]
                 repr = np.array(repr)
                 repr = (repr - np.mean(repr)) / np.std(repr)
-                songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
-        
+                songs[feature][dir].append(
+                    {"song_id": song_id, "cover_id": cover_id, "repr": repr}
+                )
+
     return merge_song_representations(songs)
+
 
 def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
     songs = {}
+    skipped_counter = 0
     for song_dir, feature in zip(songs_dir, features):
         songs[feature] = {}
         origin_path = song_dir
         entries = os.listdir(origin_path)
-        
+
         if feature == "mfcc":
-            mat_feature = 'XMFCC'
+            mat_feature = "XMFCC"
         elif feature == "hpcp":
-            mat_feature = 'XHPCP'
+            mat_feature = "XHPCP"
         elif feature == "cens":
-            mat_feature = 'XCENS'
+            mat_feature = "XCENS"
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
             songs[feature][dir] = []
+
+            if len(subdir) <= 1:
+                skipped_counter += 1
+                print(
+                    f"Warning found song with no covers: {origin_path + dir}, skipping..."
+                )
+                continue
+
             for song in subdir:
                 song_id = dir
                 cover_id = song
                 mat = scipy.io.loadmat(origin_path + dir + "/" + song)
-                repr = mat[mat_feature] # No need to normalize since already normalized
+                repr = mat[mat_feature]  # No need to normalize since already normalized
                 repr = np.array(repr)
-                songs[feature][dir].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
-            
+                songs[feature][dir].append(
+                    {"song_id": song_id, "cover_id": cover_id, "repr": repr}
+                )
+
+    print(f"Total: {len(songs[features[0]])}, skipped: {skipped_counter}")
     return merge_song_representations(songs)
+
 
 def merge_song_representations(songs):
     """Merge song representations.
 
     Args:
-        songs (dict): songs in the following format: 
+        songs (dict): songs in the following format:
         {
             'mfcc': {
                 'song_id': [
@@ -139,7 +161,7 @@ def merge_song_representations(songs):
         }
 
     Returns:
-        concatenated song dict: 
+        concatenated song dict:
         {
             'song_id': [
                     {"song_id": 'song_id', "cover_id": 'cover_id_1', "repr": [repr_11, repr_21]},
@@ -156,11 +178,13 @@ def merge_song_representations(songs):
     songs_concatenated_features = {}
     for id in songs_ids:
         songs_concatenated_features[id] = []
-        
+
         covers = [songs[feature][id] for feature in features]
         for feats in zip(*covers):
-            song_id = feats[0]['song_id']
-            cover_id = feats[0]['cover_id']
-            repr = [r['repr'] for r in feats]
-            songs_concatenated_features[id].append({"song_id": song_id, "cover_id": cover_id, "repr": repr})
+            song_id = feats[0]["song_id"]
+            cover_id = feats[0]["cover_id"]
+            repr = [r["repr"] for r in feats]
+            songs_concatenated_features[id].append(
+                {"song_id": song_id, "cover_id": cover_id, "repr": repr}
+            )
     return songs_concatenated_features
