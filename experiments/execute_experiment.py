@@ -69,7 +69,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        model, test_set, config["train"]["batch_size"], results_path=res_dir_name, normalized=config['loss']=='angular'
     )
 
     print(f"MAP: {round(mean_average_precision,3)}")
@@ -111,7 +111,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        model, test_set, config["train"]["batch_size"], results_path=res_dir_name, normalized=config['loss']=='angular'
     )
     print(f"MAP: {round(mean_average_precision,3)}")
 
