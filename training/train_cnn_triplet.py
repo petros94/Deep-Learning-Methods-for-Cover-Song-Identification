@@ -22,8 +22,8 @@ def train_triplet_loss(model: torch.nn.Module,
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    margin = 1.00
-    distance = distances.LpDistance(normalize_embeddings=False)
+    margin = 0.05
+    distance = distances.LpDistance(normalize_embeddings=True)
     # distance = distances.DotProductSimilarity(normalize_embeddings=False)
     batch_all_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="all", distance=distance)
     batch_hard_miner = miners.TripletMarginMiner(margin=margin, type_of_triplets="hard", distance=distance)
@@ -32,7 +32,7 @@ def train_triplet_loss(model: torch.nn.Module,
     miner = batch_all_miner
     valid_miner = RandomTripletMiner
     
-    criterion = torch.nn.TripletMarginLoss()
+    criterion = torch.nn.TripletMarginLoss(margin=0.05)
 
     train_batches = len(train_set)
     valid_batches = len(valid_set)
@@ -83,6 +83,8 @@ def train_triplet_loss(model: torch.nn.Module,
                 data = data.to(device)
                 
                 embeddings = model(data)
+                embeddings = torch.nn.functional.normalize(embeddings)
+                
                 a, p, n = valid_miner(embeddings, labels)
             
                 loss = criterion(embeddings[a], embeddings[p], embeddings[n])
