@@ -2,7 +2,7 @@ import json
 
 from datasets.TripletDataset import TripletDataset
 
-AVAILABLE_TYPES = ["triplet"]
+AVAILABLE_TYPES = ["triplet", "angular"]
 
 def make_dataset(songs: dict, config_path: str, type: str):
     with open(config_path, "r") as f:
@@ -11,7 +11,7 @@ def make_dataset(songs: dict, config_path: str, type: str):
     if type not in AVAILABLE_TYPES:
         raise ValueError("Invalid type")
     
-    if type == 'triplet':
+    if type in ('triplet', 'angular'):
         return TripletDataset(songs, 
                               n_batches=config['features']['n_batches'], 
                               songs_per_batch=config['features']['songs_per_batch'],
