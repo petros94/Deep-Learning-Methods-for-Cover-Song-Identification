@@ -53,6 +53,7 @@ def generate_ROC(
             clf_labels.extend([0] * neg_dist.size()[0])
 
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
+    print(distances)
     fpr, tpr, thresholds = roc_curve(clf_labels, score_fun(distances, normalized))
     ap = average_precision_score(clf_labels, score_fun(distances, normalized))
     df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})
