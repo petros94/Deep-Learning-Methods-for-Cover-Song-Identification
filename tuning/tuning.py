@@ -18,7 +18,7 @@ from utils.generic import get_device
 from training.miners import RandomTripletMiner
 
 def score_fun(distance, normalized):
-        return 1 / np.sqrt(distance) if normalized else 2-distance
+        return 1 / np.sqrt(distance) if not normalized else 2-distance
     
 def generate_ROC(
     model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str, normalized=False
