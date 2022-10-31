@@ -8,10 +8,8 @@ class ThresholdClassifier(nn.Module):
         self.model = model
         
     def forward(self, x1, x2):
-        out1 = torch.nn.functional.normalize(self.model(x1))
-        out2 = torch.nn.functional.normalize(self.model(x2))
-        
+        out1 = self.model(x1)
+        out2 = self.model(x2)
         dist = torch.norm(out1 - out2, dim=1)
-        # inv = 1/torch.sqrt(dist)
         inv = 2 - dist
         return (inv > self.D)*1, dist

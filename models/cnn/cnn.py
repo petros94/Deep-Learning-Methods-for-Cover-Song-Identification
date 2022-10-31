@@ -50,7 +50,9 @@ class CNN(nn.Module):
         
         # squeeze last dimensions
         out = out.view(batch_size, feature_size)
-        return out
+        
+        # normalize embeddings
+        return nn.functional.normalize(out)
     
 def from_config(config_path: str):
     """Create a cnn model from configuration
