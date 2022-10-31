@@ -111,14 +111,15 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
-            songs[feature][dir] = []
-
+            
             if len(subdir) <= 1:
                 skipped_counter += 1
                 print(
                     f"Warning found song with no covers: {origin_path + dir}, skipping..."
                 )
                 continue
+            
+            songs[feature][dir] = []
 
             for song in subdir:
                 song_id = dir

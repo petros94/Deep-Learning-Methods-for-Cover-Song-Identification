@@ -25,10 +25,6 @@ class TripletDataset(torch.utils.data.Dataset):
                 repr = cover['repr']
                 frames = segment_and_scale(repr, frame_size=frame_size, scale=scale)
                 segs.append(frames)
-                
-            if len(segs) == 0:
-                print(f"Warning: found empty folder {song_id}")
-                continue
             
             # Find minimum length
             min_len = min(list(map(lambda i: len(i), segs)))
