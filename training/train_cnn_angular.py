@@ -22,13 +22,11 @@ def train_angular_loss(model: torch.nn.Module,
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
-    distance = distances.LpDistance(normalize_embeddings=False)    
+    distance = distances.LpDistance(normalize_embeddings=True)    
     loss_func = losses.AngularLoss(distance=distance)
     miner = miners.AngularMiner(distance=distance)
     valid_miner = miners.AngularMiner(alpha=0, distance=distance)
     
-    criterion = torch.nn.TripletMarginLoss()
-
     train_batches = len(train_set)
     valid_batches = len(valid_set)
     
