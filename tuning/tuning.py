@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import torch
 import random
 import pandas as pd
-from torch import functional as F
+from torch.nn import functional as F
 
 from utils.generic import get_device
 from training.miners import RandomTripletMiner
