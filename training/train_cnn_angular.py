@@ -25,7 +25,7 @@ def train_angular_loss(model: torch.nn.Module,
     distance = distances.LpDistance(normalize_embeddings=True)    
     loss_func = losses.AngularLoss(distance=distance)
     miner = miners.AngularMiner(distance=distance)
-    valid_miner = miners.AngularMiner(alpha=0, distance=distance)
+    valid_miner = miners.AngularMiner(angle=0, distance=distance)
     
     train_batches = len(train_set)
     valid_batches = len(valid_set)
