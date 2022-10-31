@@ -16,10 +16,13 @@ import pandas as pd
 from utils.generic import get_device
 from training.miners import RandomTripletMiner
 
-
+def score_fun(distance, normalized):
+        return 1 / np.sqrt(distance) if normalized else 1-distance
+    
 def generate_ROC(
-    model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str
-):
+    model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str, normalized=False
+): 
+    
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
@@ -45,8 +48,8 @@ def generate_ROC(
             clf_labels.extend([0] * neg_dist.size()[0])
 
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
-    fpr, tpr, thresholds = roc_curve(clf_labels, 1 / np.sqrt(distances))
-    ap = average_precision_score(clf_labels, 1 / np.sqrt(distances))
+    fpr, tpr, thresholds = roc_curve(clf_labels, score_fun(distances, normalized))
+    ap = average_precision_score(clf_labels, score_fun(distances, normalized))
     df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})
     roc_auc = auc(fpr, tpr)
 
