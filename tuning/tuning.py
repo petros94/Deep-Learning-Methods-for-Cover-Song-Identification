@@ -12,12 +12,13 @@ import matplotlib.pyplot as plt
 import torch
 import random
 import pandas as pd
+from torch import functional as F
 
 from utils.generic import get_device
 from training.miners import RandomTripletMiner
 
 def score_fun(distance, normalized):
-        return 1 / np.sqrt(distance) if normalized else 1-distance
+        return 1 / np.sqrt(distance) if normalized else 2-distance
     
 def generate_ROC(
     model, data_set: torch.utils.data.Dataset, batch_size: int, results_path: str, normalized=False
@@ -36,6 +37,10 @@ def generate_ROC(
             data = data.type(torch.FloatTensor).to(device)
 
             embeddings = model(data)
+            
+            if normalized:
+                embeddings = F.normalize(embeddings)
+                
             a, p, n = miner(embeddings, labels)
 
             pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
