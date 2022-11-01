@@ -9,7 +9,7 @@ class ViT(nn.Module):
     def __init__(
         self,
         patch_size=4,
-        image_size=128,
+        image_size=(12, 320),
         num_hidden_layers=12,
         num_attention_heads=12,
         hidden_size=768,

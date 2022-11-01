@@ -1,6 +1,9 @@
 {
-    "patch_size": 16,
-    "image_size": 128,
+    "patch_size": 4,
+    "image_size": [
+        12,
+        320
+    ],
     "num_attention_heads": 6,
     "num_hidden_layers": 6,
     "hidden_size": 256
