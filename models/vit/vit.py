@@ -32,7 +32,7 @@ class ViT(nn.Module):
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
         outputs = outputs.pooler_output
-        return self.fc(outputs)
+        return nn.functional.normalize(self.fc(outputs))
 
 
 def from_config(config_path: str):
