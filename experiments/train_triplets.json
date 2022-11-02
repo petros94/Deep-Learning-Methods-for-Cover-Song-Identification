@@ -28,7 +28,7 @@
     "loss": "triplet",
     "features": {
         "n_batches": 256,
-        "songs_per_batch": 32,
+        "songs_per_batch": 64,
         "samples_per_song": 8,
         "input": "hpcp",
         "frame_size": 1600,
