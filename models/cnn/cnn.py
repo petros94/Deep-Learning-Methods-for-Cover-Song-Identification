@@ -24,7 +24,6 @@ class CNN(nn.Module):
         self.drop_prob_conv = self.config["drop_prob"]
 
         self.features = self.create_network()
-        self.fc = nn.Linear(in_features=self.config["channels"][-1], out_features=self.config["channels"][-1])
 
     def create_network(self):
         modules_conv = []
@@ -51,7 +50,6 @@ class CNN(nn.Module):
         
         # squeeze last dimensions
         out = out.view(batch_size, feature_size)
-        out = self.fc(out)
         # normalize embeddings
         return nn.functional.normalize(out)
     
