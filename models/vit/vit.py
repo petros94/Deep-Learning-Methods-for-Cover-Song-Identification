@@ -1,4 +1,4 @@
-from transformers import CvtFeatureExtractor, CvtModel, CvtConfig
+from transformers import CvtModel, CvtConfig
 import torch
 from torch import nn
 import json
@@ -31,7 +31,7 @@ class ViT(nn.Module):
         print(x.size())
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
-        outputs = outputs.cls_token_value.squeeze(0)
+        outputs = outputs.cls_token_value.squeeze(1)
         return nn.functional.normalize(outputs)
 
 

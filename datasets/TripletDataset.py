@@ -9,7 +9,9 @@ class TripletDataset(torch.utils.data.Dataset):
         print("Creating TripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
-        self.songs = songs
+        
+        self.songs = self.filter_per_size(songs, frame_size)
+        print(f"Initial songs: {len(songs)}, after filtering: {len(self.songs)}")
         
         """
         {
@@ -71,6 +73,19 @@ class TripletDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.batches)
     
+    def filter_per_size(self, songs, frame_size):
+        output = {}
+        for song_id, covers in songs.items():
+            c = []
+            for cover in covers:
+                if cover['repr'].shape[1] > frame_size:
+                    c.append(cover)
+            
+            if len(c) > 1:
+                output[song_id] = c
+        return output
+                
+                        
     # def get_full_songs(self):
     #     songs_repr = []
     #     labels = []
