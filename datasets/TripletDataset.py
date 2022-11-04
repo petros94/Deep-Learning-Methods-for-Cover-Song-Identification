@@ -78,6 +78,7 @@ class TripletDataset(torch.utils.data.Dataset):
         for song_id, covers in songs.items():
             c = []
             for cover in covers:
+                print(np.array(cover['repr']).shape)
                 if np.array(cover['repr']).shape[1] > frame_size:
                     c.append(cover)
             
