@@ -58,22 +58,35 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
     clf.model.eval()
     device = get_device()
     clf.model.type(torch.FloatTensor).to(device)
-    
+    miner = RandomTripletMiner
     embeddings = []
+    y_pred = []
+    y_true = []
     with torch.no_grad():
         for frames, label in zip(data_set.frames, data_set.labels):
             x = frames.to(device)
             embeddings.append(clf.model(x))
             
         embeddings = torch.cat(embeddings, dim=0)
-        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-        labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
-        distances, clf_labels = torch.flatten(distance_matrix).cpu().numpy(), torch.flatten(labels_matrix).cpu().numpy()
-        inv = 2 - distances
-        y_pred = (inv > clf.D)*1
+        for i in range(100):
+            a, p, n = miner(embeddings, torch.tensor(data_set.labels))
+            
+            pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+            inv = 2 - pos_dist
+            pos_preds = (inv > clf.D)*1
+            pos_preds = pos_preds.cpu().tolist()
+            y_pred.extend(pos_preds)
+            y_true.extend([1] * len(pos_preds))
+            
+            neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+            inv = 2 - neg_dist
+            neg_preds = (inv > clf.D)*1
+            neg_preds = neg_preds.cpu().tolist()
+            y_pred.extend(neg_preds)
+            y_true.extend([0] * len(neg_preds))
         
-        return generate_metrics_bare(clf_labels, y_pred, results_path)
+        return generate_metrics_bare(y_true, y_pred, results_path)
 
 
 def generate_metrics_bare(y_true, y_pred, results_path):
