@@ -2,6 +2,7 @@
     "representation": [
         "hpcp"
     ],
+    "train_datasets": [],
     "test_datasets": [
         {
             "type": "covers80",

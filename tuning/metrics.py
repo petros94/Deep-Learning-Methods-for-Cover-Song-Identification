@@ -65,7 +65,7 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
             x = frames.to(device)
             embeddings.append(clf.model(x))
             
-        embeddings = torch.stack(embeddings)
+        embeddings = torch.cat(embeddings, dim=0)
         distance_matrix = torch.cdist(embeddings, embeddings, p=2)
         labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
@@ -92,12 +92,12 @@ def generate_metrics_bare(y_true, y_pred, results_path):
     return df
 
 
-def mean_reprocical_rank(model, data_set):
+def mean_reprocical_rank(model, data_set, segmented):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
     with torch.no_grad():
-        if type(data_set) in (TripletDataset):
+        if segmented:
             for i in range(len(data_set)):
                 # N X 1 X num_feats X num_samples, N
                 (data, labels) = data_set[i]
@@ -120,7 +120,7 @@ def mean_reprocical_rank(model, data_set):
                     rr.append(1 / rank)
             mrr = np.mean(rr)
             return mrr
-        elif type(data_set) in (SimpleDataset):
+        else:
             for frames, label in zip(data_set.frames, data_set.labels):
                 x = frames.to(device)
                 embeddings.append(model(x))

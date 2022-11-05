@@ -41,15 +41,10 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"])
 
     if len(test_songs) > 0:
-        # test_set = make_dataset(
-        #     test_songs, config_path=config_path, type=config["loss"]
-        # )
-        test_set = SimpleDataset(test_songs, config['features']['scale'])
+        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
     else:
         print("No test set provided, validation set will be used")
-        # test_set = valid_set
-        test_set = SimpleDataset(valid_songs, config['features']['scale'])
-
+        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
     print(
         "Created training set: {} samples, valid set: {} samples".format(
             len(train_set), len(valid_set)
@@ -78,7 +73,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     print(f"MAP: {round(mean_average_precision,3)}")
 
-    mrr = mean_reprocical_rank(model, test_set)
+    mrr = mean_reprocical_rank(model, test_set, segmented=config['test']['segmented'])
     print(f"MRR: {round(mrr, 3)}")
 
     try:
@@ -108,8 +103,8 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    # test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"])
-    test_set = SimpleDataset(test_songs, config['features']['scale'])
+    
+    test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
     print("Created eval set: {} samples".format(len(test_songs)))
 
     model = make_model(config_path=config_path)
@@ -120,7 +115,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
     )
     print(f"MAP: {round(mean_average_precision,3)}")
 
-    mrr = mean_reprocical_rank(model, test_set)
+    mrr = mean_reprocical_rank(model, test_set, segmented=config['test']['segmented'])
     print(f"MRR: {round(mrr, 3)}")
 
     try:

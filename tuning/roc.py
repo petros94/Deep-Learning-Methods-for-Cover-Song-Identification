@@ -67,7 +67,7 @@ def generate_ROC_full(model, data_set: SimpleDataset, results_path):
             x = frames.to(device)
             embeddings.append(model(x))
             
-        embeddings = torch.stack(embeddings)
+        embeddings = torch.cat(embeddings, dim=0)
         distance_matrix = torch.cdist(embeddings, embeddings, p=2)
         labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
