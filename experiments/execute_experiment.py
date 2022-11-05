@@ -37,8 +37,8 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
-    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"])
-    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"])
+    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
+    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
 
     if len(test_songs) > 0:
         test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
