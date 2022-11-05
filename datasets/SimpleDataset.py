@@ -1,5 +1,5 @@
 from utils.generic import segment_and_scale
-import torch
+import numpy as np
 
 class SimpleDataset:
     def __init__(self, songs, scale=(1, 0.33)):
@@ -10,6 +10,6 @@ class SimpleDataset:
         self.labels = []
         for song_id, covers in songs.items():
             for cover in covers:
-                repr = torch.tensor(cover['repr'])
+                repr = np.array(cover['repr'])
                 self.frames.append(segment_and_scale(repr, frame_size=None, scale=scale))
                 self.labels.append(self.label_mapping[song_id])
