@@ -122,6 +122,7 @@ def mean_reprocical_rank(model, data_set, segmented):
             return mrr
         else:
             embeddings = []
+            labels = data_set.labels
             for frames, label in zip(data_set.frames, data_set.labels):
                 x = frames.to(device)
                 embeddings.append(model(x))
