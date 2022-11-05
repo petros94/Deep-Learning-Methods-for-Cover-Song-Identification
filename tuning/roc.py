@@ -17,9 +17,9 @@ from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
 def generate_ROC(model, data_set, results_path):
-    if type(data_set) in (TripletDataset):
+    if type(data_set) in [TripletDataset]:
         return generate_ROC_segments(model, data_set, results_path)
-    elif type(data_set) in (SimpleDataset):
+    elif type(data_set) in [SimpleDataset]:
         return generate_ROC_full(model, data_set, results_path)
     
     

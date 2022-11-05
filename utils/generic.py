@@ -153,7 +153,10 @@ def segment_and_scale(repr, frame_size, scale) -> torch.tensor:
         # num_channels X num_features X num_samples
         song_repr = torch.stack(scaled)
         # num_segs X num_channels X num_features X num_samples
-        frames = torch.stack(generate_segments(song_repr, step=frame_size))
+        if frame_size is not None:
+          frames = torch.stack(generate_segments(song_repr, step=frame_size))
+        else:
+          frames = song_repr.unsqueeze(0)
         frames = F.interpolate(frames, scale_factor=scale)
         
         assert frames.dim() == 4
