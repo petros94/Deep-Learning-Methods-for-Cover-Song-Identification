@@ -121,10 +121,12 @@ def mean_reprocical_rank(model, data_set, segmented):
             mrr = np.mean(rr)
             return mrr
         else:
+            embeddings = []
             for frames, label in zip(data_set.frames, data_set.labels):
                 x = frames.to(device)
                 embeddings.append(model(x))
-                
+            
+            embeddings = torch.cat(embeddings, dim=0)
             # Size N x N
             rr = []
             distance_matrix = torch.cdist(embeddings, embeddings, p=2)
