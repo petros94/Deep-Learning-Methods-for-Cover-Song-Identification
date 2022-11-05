@@ -53,7 +53,7 @@ def generate_ROC_segments(
             clf_labels.extend([0] * neg_dist.size()[0])
 
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
-    return generate_POC_pure(distances, clf_labels, results_path)
+    return generate_ROC_bare(distances, clf_labels, results_path)
 
 
 def generate_ROC_full(model, data_set: SimpleDataset, results_path):
@@ -67,16 +67,16 @@ def generate_ROC_full(model, data_set: SimpleDataset, results_path):
             x = frames.to(device)
             embeddings.append(model(x))
             
-            
+        embeddings = torch.stack(embeddings)
         distance_matrix = torch.cdist(embeddings, embeddings, p=2)
         labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
         
         distances, clf_labels = torch.flatten(distance_matrix).cpu().numpy(), torch.flatten(labels_matrix).cpu().numpy()
-        return generate_POC_bare(distances, clf_labels, results_path)
+        return generate_ROC_bare(distances, clf_labels, results_path)
     
             
-def generate_POC_bare(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
+def generate_ROC_bare(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
     fpr, tpr, thresholds = roc_curve(clf_labels, 2-distances)
     ap = average_precision_score(clf_labels, 2-distances)
     df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})

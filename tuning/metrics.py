@@ -65,7 +65,7 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
             x = frames.to(device)
             embeddings.append(clf.model(x))
             
-            
+        embeddings = torch.stack(embeddings)
         distance_matrix = torch.cdist(embeddings, embeddings, p=2)
         labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
