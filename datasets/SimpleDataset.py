@@ -10,6 +10,6 @@ class SimpleDataset:
         self.labels = []
         for song_id, covers in songs.items():
             for cover in covers:
-                repr = np.array(cover['repr'])
+                repr = cover['repr']
                 self.frames.append(segment_and_scale(repr, frame_size=None, scale=scale))
                 self.labels.append(self.label_mapping[song_id])
