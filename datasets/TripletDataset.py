@@ -19,9 +19,9 @@ class TripletDataset(torch.utils.data.Dataset):
         }
         """
         song_segs = {}
-        self.int_mapping = {k: i for i,k in enumerate(list(songs.keys()))}
+        self.int_mapping = {k: i for i,k in enumerate(list(self.songs.keys()))}
         
-        for song_id, covers in songs.items():
+        for song_id, covers in self.songs.items():
             segs = []
             for cover in covers:
                 repr = cover['repr']
@@ -32,7 +32,7 @@ class TripletDataset(torch.utils.data.Dataset):
             min_len = min(list(map(lambda i: len(i), segs)))
 
             # Crop to minimum length
-            segs = [seg[: min_len - 1] for seg in segs]
+            segs = [seg[: min_len] for seg in segs]
             
             # Size num_segs X num_covers X num_channels X num_features X frame_size
             ret = torch.stack(segs, dim=1)
@@ -46,7 +46,7 @@ class TripletDataset(torch.utils.data.Dataset):
         for b in range(self.n_batches):
             samples = []
             labels = []
-            P = sample_songs(songs, self.songs_per_batch).keys()
+            P = sample_songs(self.songs, self.songs_per_batch).keys()
             
             for song_id in P:
                 K = random.choice(song_segs[song_id]) #Select a random part of the songs
