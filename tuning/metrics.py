@@ -16,10 +16,10 @@ from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
 
-def generate_metrics(clf, data_set, results_path: str):
-    if isinstance(data_set, TripletDataset):
+def generate_metrics(clf, data_set, segmented, results_path: str):
+    if segmented:
         return generate_metrics_segments(clf, data_set, results_path)
-    elif isinstance(data_set, SimpleDataset):
+    else:
         return generate_metrics_full(clf, data_set, results_path)
 
 

@@ -16,10 +16,10 @@ from training.miners import RandomTripletMiner
 from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
-def generate_ROC(model, data_set, results_path):
-    if isinstance(data_set, TripletDataset):
+def generate_ROC(model, data_set, segmented, results_path):
+    if segmented:
         return generate_ROC_segments(model, data_set, results_path)
-    elif isinstance(data_set, SimpleDataset):
+    else:
         return generate_ROC_full(model, data_set, results_path)
     
     

@@ -73,7 +73,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, results_path=res_dir_name
+        model, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
 
     print(f"MAP: {round(mean_average_precision,3)}")
@@ -89,7 +89,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     clf = ThresholdClassifier(model, thr)
 
     df = generate_metrics(
-        clf, test_set, results_path=res_dir_name
+        clf, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
@@ -116,7 +116,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, results_path=res_dir_name
+        model, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
     print(f"MAP: {round(mean_average_precision,3)}")
 
@@ -130,7 +130,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     clf = ThresholdClassifier(model, thr)
     df = generate_metrics(
-        clf, test_set, results_path=res_dir_name
+        clf, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
