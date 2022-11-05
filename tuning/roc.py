@@ -60,19 +60,34 @@ def generate_ROC_full(model, data_set: SimpleDataset, results_path):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
-    
+    miner = RandomTripletMiner
     embeddings = []
+    distances = []
+    clf_labels = []
     with torch.no_grad():
         for frames, label in zip(data_set.frames, data_set.labels):
             x = frames.to(device)
             embeddings.append(model(x))
             
-        embeddings = torch.cat(embeddings, dim=0)
-        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-        labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
+        for i in range(10):
+            a, p, n = miner(embeddings, data_set.labels)
+            
+            pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+            neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+
+            distances.append(pos_dist)
+            clf_labels.extend([1] * pos_dist.size()[0])
+
+            distances.append(neg_dist)
+            clf_labels.extend([0] * neg_dist.size()[0])
+            
+        # embeddings = torch.cat(embeddings, dim=0)
+        # distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+        # labels_matrix = torch.tensor([1*(lab_1 == lab_2) for lab_1 in data_set.labels for lab_2 in data_set.labels])
         
         
-        distances, clf_labels = torch.flatten(distance_matrix).cpu().numpy(), torch.flatten(labels_matrix).cpu().numpy()
+        # distances, clf_labels = torch.flatten(distance_matrix).cpu().numpy(), torch.flatten(labels_matrix).cpu().numpy()
+        distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
         return generate_ROC_bare(distances, clf_labels, results_path)
     
             
