@@ -17,9 +17,9 @@ from datasets.SimpleDataset import SimpleDataset
 
 
 def generate_metrics(clf, data_set, results_path: str):
-    if type(data_set) in [TripletDataset]:
+    if isinstance(data_set, TripletDataset):
         return generate_metrics_segments(clf, data_set, results_path)
-    elif type(data_set) in [SimpleDataset]:
+    elif isinstance(data_set, SimpleDataset):
         return generate_metrics_full(clf, data_set, results_path)
 
 
