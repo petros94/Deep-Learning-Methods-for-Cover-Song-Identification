@@ -1,6 +1,7 @@
 import json
 import os
 import numpy as np
+from datasets.SimpleDataset import SimpleDataset
 from datasets.factory import make_dataset
 from datetime import datetime
 from models.classifier import ThresholdClassifier
@@ -10,7 +11,8 @@ from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import split_songs
 from utils.visualization import visualize_losses
-from tuning.tuning import generate_ROC, generate_metrics, mean_reprocical_rank
+from tuning.roc import generate_ROC
+from tuning.metrics import generate_metrics, mean_reprocical_rank
 
 
 def execute_single(config_path: str = "experiments/experiment_config.json"):
@@ -39,12 +41,14 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"])
 
     if len(test_songs) > 0:
-        test_set = make_dataset(
-            test_songs, config_path=config_path, type=config["loss"]
-        )
+        # test_set = make_dataset(
+        #     test_songs, config_path=config_path, type=config["loss"]
+        # )
+        test_set = SimpleDataset(test_songs, config['features']['scale'])
     else:
         print("No test set provided, validation set will be used")
-        test_set = valid_set
+        # test_set = valid_set
+        test_set = SimpleDataset(valid_songs, config['features']['scale'])
 
     print(
         "Created training set: {} samples, valid set: {} samples".format(
@@ -69,7 +73,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        model, test_set, results_path=res_dir_name
     )
 
     print(f"MAP: {round(mean_average_precision,3)}")
@@ -85,7 +89,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     clf = ThresholdClassifier(model, thr)
 
     df = generate_metrics(
-        clf, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        clf, test_set, results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
@@ -104,14 +108,15 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"])
+    # test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"])
+    test_set = SimpleDataset(test_songs, config['features']['scale'])
     print("Created eval set: {} samples".format(len(test_songs)))
 
     model = make_model(config_path=config_path)
 
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        model, test_set, results_path=res_dir_name
     )
     print(f"MAP: {round(mean_average_precision,3)}")
 
@@ -125,7 +130,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     clf = ThresholdClassifier(model, thr)
     df = generate_metrics(
-        clf, test_set, config["train"]["batch_size"], results_path=res_dir_name
+        clf, test_set, results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
