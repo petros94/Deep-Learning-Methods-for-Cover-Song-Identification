@@ -1,41 +1,27 @@
 {
     "representation": [
-        "hpcp",
-        "mfcc"
-    ],
-    "train_datasets": [
-        {
-            "type": "covers1000",
-            "path": [
-                "/content/hpcps/",
-                "/content/mfccs/"
-            ],
-            "n_samples": 1000
-        }
+        "hpcp"
     ],
     "test_datasets": [
         {
             "type": "covers80",
             "path": [
-                "/content/hpcps80/content/hpcps80/",
-                "/content/mfccs80/content/mfccs80/"
+                "/content/hpcps80/content/hpcps80/"
             ],
             "n_samples": 1000
         }
     ],
     "model": {
         "type": "cnn",
-        "config_path": "checkpoints/example_model_03_10_22/config.json",
-        "checkpoint_path": "checkpoints/example_model_03_10_22/checkpoint.tar",
-        "threshold": 0.13
+        "config_path": "checkpoints/example_model_05_11_22/config.json",
+        "checkpoint_path": "checkpoints/example_model_05_11_22/checkpoint.tar"
     },
     "loss": "triplet",
     "features": {
-        "n_batches": 256,
-        "songs_per_batch": 32,
-        "samples_per_song": 8,
-        "input": "hpcp+mfcc",
-        "frame_size": 1600,
+        "n_batches": 512,
+        "songs_per_batch": 64,
+        "input": "hpcp",
+        "frame_size": 2600,
         "scale": [
             1,
             0.2
@@ -44,8 +30,8 @@
     "train": {
         "train_perc": 0.8,
         "n_epochs": 15,
-        "lr": 5e-4,
-        "patience": 2,
+        "lr": 0.0005,
+        "patience": 1,
         "checkpoints_path": "checkpoints/",
         "results_path": "results/"
     }
