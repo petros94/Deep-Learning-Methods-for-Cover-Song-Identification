@@ -131,6 +131,8 @@ def mean_reprocical_rank(model, data_set, segmented):
             # Size N x N
             rr = []
             distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+            
+            print(distance_matrix.size())
             for d, lab in zip(distance_matrix, labels):
                 sorted_ids_by_dist = d.argsort()
                 sorted_labels_by_dist = labels[sorted_ids_by_dist]
