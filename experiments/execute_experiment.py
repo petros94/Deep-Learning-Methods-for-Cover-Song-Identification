@@ -1,7 +1,5 @@
 import json
 import os
-import numpy as np
-from datasets.SimpleDataset import SimpleDataset
 from datasets.factory import make_dataset
 from datetime import datetime
 from models.classifier import ThresholdClassifier
@@ -39,12 +37,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
-
-    if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
-    else:
-        print("No test set provided, validation set will be used")
-        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
+    
     print(
         "Created training set: {} samples, valid set: {} samples".format(
             len(train_set), len(valid_set)
@@ -65,30 +58,10 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
 
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
-
-    print("Plot ROC and calculate metrics")
-    roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
-    )
-
-    print(f"MAP: {round(mean_average_precision,3)}")
-
-    mrr = mean_reprocical_rank(model, test_set, segmented=config['test']['segmented'])
-    print(f"MRR: {round(mrr, 3)}")
-
-    try:
-        thr = config["model"]["threshold"]
-    except KeyError:
-        thr = roc_stats.loc[roc_stats["tpr"] > 0.7, "thr"].iloc[0]
-
-    clf = ThresholdClassifier(model, thr)
-
-    df = generate_metrics(
-        clf, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
-    )
-
-    generate_report(config, df, mean_average_precision, mrr, res_dir_name)
-
+    
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, segmented=True)
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, segmented=True)
+    
     return res_dir_name, chk_dir_name
 
 
@@ -104,15 +77,38 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
     
-    test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=config['test']['segmented'])
-    print("Created eval set: {} samples".format(len(test_songs)))
+    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=True)
+    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=False)
+
+    return res_dir_name
+
+
+def evaluate_test_set(config_path, results_path, test_songs, valid_songs=None, segmented=False):
+    if segmented:
+        print("Evaluating for segmented input")
+        res_dir_name = results_path + '/segmented'
+    else:
+        print("Evaluating on full song input")    
+        res_dir_name = results_path + '/full'
+        
+    os.mkdir(res_dir_name)
+    
+    with open(config_path, "r") as f:
+        config = json.load(f)
+        
+    if len(test_songs) > 0:
+        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=segmented)
+    else:
+        print("No test set provided, validation set will be used")
+        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=segmented)
 
     model = make_model(config_path=config_path)
-
+    
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
         model, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
+
     print(f"MAP: {round(mean_average_precision,3)}")
 
     mrr = mean_reprocical_rank(model, test_set, segmented=config['test']['segmented'])
@@ -124,13 +120,12 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
         thr = roc_stats.loc[roc_stats["tpr"] > 0.7, "thr"].iloc[0]
 
     clf = ThresholdClassifier(model, thr)
+
     df = generate_metrics(
         clf, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
-
-    return res_dir_name
 
 
 def generate_report(config, metrics_df, mean_average_precision, mrr, results_path):

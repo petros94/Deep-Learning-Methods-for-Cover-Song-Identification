@@ -46,7 +46,7 @@
   "train": {
     "train_perc": 0.8,
     "n_epochs": 15,
-    "lr": 0.0005,
+    "lr": 0.0002,
     "patience": 1,
     "checkpoints_path": "checkpoints/",
     "results_path": "results/"
