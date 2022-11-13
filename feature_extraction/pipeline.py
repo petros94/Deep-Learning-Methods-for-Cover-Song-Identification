@@ -125,4 +125,4 @@ def run_pipeline(csv_dir):
     read_csv_and_download_songs(output_csv, output_dataset_songs)
     
     print("Generating features")
-    convert_songs_to_features(feature="hpcp", origin_path=output_dataset_songs, save_path="/content/barbie_dataset_hpcp")
+    convert_songs_to_features(feature="hpcp", origin_path=output_dataset_songs, save_path="/content/full_dataset_hpcp")
