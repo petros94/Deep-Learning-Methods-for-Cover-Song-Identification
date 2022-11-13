@@ -3,6 +3,7 @@ from feature_extraction.extraction import FeatureExtractor
 import pandas as pd
 import os
 from scipy.io import savemat
+from tqdm import tqdm
 
 COL_NAMES = {
     "song_name": "Song name",
@@ -14,18 +15,18 @@ COL_NAMES = {
 
 
 def concat_csvs(csv_paths, output_csv_path):
+    
+    def transform_url(url):
+        url = url.split('&')[0] 
+        url = url.split('=')[-1] if "=" in url else url.split("/")[-1]
+        return url
+    
     def common_member(a, b):
         a_set = set(
-            [
-                link.split("=")[-1] if "=" in link else link.split("/")[-1]
-                for link in a
-            ]
+            [transform_url(link) for link in a]
         )
         b_set = set(
-            [
-                link.split("=")[-1] if "=" in link else link.split("/")[-1]
-                for link in b
-            ]
+            [transform_url(link) for link in b]
         )
         if len(a_set.intersection(b_set)) > 0:
             return True
@@ -59,7 +60,7 @@ def read_csv_and_download_songs(csv_path, output_base_path):
     downloader = YoutubeDownloader()
     links = pd.read_csv(csv_path)
 
-    for index, row in links.iterrows():
+    for index, row in tqdm(links.iterrows(), total=links.shape[0]):
         # Create folder
         song_name = row[COL_NAMES["song_name"]]
         song_base_path = output_base_path + "/" + song_name
@@ -87,7 +88,7 @@ def convert_songs_to_features(
     elif feature == "cens":
         feature = "XCENS"
 
-    for dir in entries:
+    for dir in tqdm(entries):
         subdir = os.listdir(origin_path + "/" + dir)
         songs[dir] = []
         for song in subdir:
@@ -104,3 +105,24 @@ def convert_songs_to_features(
                 os.path.dirname(save_path + "/" + dir + "/" + song), exist_ok=True
             )
             savemat(save_path_file, mat)
+            
+
+def run_pipeline(csv_dir):
+    
+    def absoluteFilePaths(directory):
+        for dirpath,_,filenames in os.walk(directory):
+            for f in filenames:
+                yield os.path.abspath(os.path.join(dirpath, f))
+    
+    csv_list = [path for path in absoluteFilePaths(csv_dir)]
+    print(csv_list)
+    
+    output_csv = '/content/full_dataset.csv'
+    output_dataset_songs = '/content/full_dataset_songs'
+    concat_csvs(csv_list, output_csv)
+    
+    print("Downloading songs")
+    read_csv_and_download_songs(output_csv, output_dataset_songs)
+    
+    print("Generating features")
+    convert_songs_to_features(feature="hpcp", origin_path=output_dataset_songs, save_path="/content/barbie_dataset_hpcp")
