@@ -11,6 +11,13 @@ COL_NAMES = {
     "cover_1": "YouTube URL - Cover Song 1",
     "cover_2": "YouTube URL - Cover Song 2",
     "cover_3": "YouTube URL - Cover Song 3",
+    "cover_4": "YouTube URL - Cover Song 4",
+    "cover_5": "YouTube URL - Cover Song 5",
+    "cover_6": "YouTube URL - Cover Song 6",
+    "cover_7": "YouTube URL - Cover Song 7",
+    "cover_8": "YouTube URL - Cover Song 8",
+    "cover_9": "YouTube URL - Cover Song 9",
+    "cover_10": "YouTube URL - Cover Song 10",
 }
 
 
@@ -31,26 +38,45 @@ def concat_csvs(csv_paths, output_csv_path):
         if len(a_set.intersection(b_set)) > 0:
             return True
         return False
+    
+    def union(a,b):
+        a_set = set(
+            [transform_url(link) for link in a]
+        )
+        b_set = set(
+            [transform_url(link) for link in b]
+        )
+        
+        union = a_set.union(b_set)
+        return ['https://youtu.be/' + l for l in union]
+        
 
-    output_links = pd.DataFrame()
+    output_links = pd.DataFrame({name: [] for name in COL_NAMES.values()})
     for path in csv_paths:
         new_dataset = pd.read_csv(path)
         to_be_added = []
-        for links_1 in new_dataset.iterrows():
-            skip = False
+        to_be_deleted_ids = []
+        for idx_1, links_1 in new_dataset.iterrows():
+            links_list_1 = links_1.dropna().values.tolist()
+            new_links = links_list_1
 
-            for links_2 in output_links.iterrows():
-                if common_member(links_1.tolist(), links_2.tolist()):
-                    skip = True
+            for idx_2, links_2 in output_links.iterrows():
+                links_list_2 = links_2.dropna().values.tolist()
+                
+                if common_member(links_list_1[1:], links_list_2[1:]):
                     print(
-                        f"Warning, duplicate song found: {links_1}, {links_2}. Skipping..."
+                        f"Warning, duplicate song found: {links_1}, {links_2}. Will keep common elements..."
                     )
+                    new_links = [links_list_1[0]] + union(links_list_1[1:], links_list_2[1:])
+                    to_be_deleted_ids.append(idx_2)
                     break
-
-            if not skip:
-                to_be_added.append(links_1)
+                
+            to_be_added.append(new_links)
 
         to_be_added = pd.DataFrame(to_be_added)
+        to_be_added.columns = list(COL_NAMES.values())[:len(to_be_added.columns)]
+        
+        output_links = output_links.drop(to_be_deleted_ids)
         output_links = pd.concat([output_links, to_be_added])
 
     output_links.to_csv(output_csv_path)
@@ -67,7 +93,7 @@ def read_csv_and_download_songs(csv_path, output_base_path):
         os.makedirs(song_base_path, exist_ok=True)
 
         # Download all covers to folder
-        for cover in list(row)[1:]:
+        for cover in list(row.dropna())[1:]:
             downloader.download(song_base_path, cover)
 
 
