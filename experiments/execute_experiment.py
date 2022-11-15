@@ -97,10 +97,10 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         config = json.load(f)
         
     if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=segmented)
+        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=segmented, n_batches=256)
     else:
         print("No test set provided, validation set will be used")
-        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=segmented)
+        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=segmented, n_batches=256)
 
     if model == None:
         model = make_model(config_path=config_path)

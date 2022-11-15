@@ -71,7 +71,7 @@ def generate_ROC_full(model, data_set: SimpleDataset, results_path):
             
         embeddings = torch.cat(embeddings, dim=0)
         
-        for i in range(100):
+        for i in range(128):
             a, p, n = miner(embeddings, torch.tensor(data_set.labels))
             
             pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
