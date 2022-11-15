@@ -59,8 +59,8 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
     
-    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, segmented=True)
-    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, segmented=True)
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=True)
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=False)
     
     return res_dir_name, chk_dir_name
 
@@ -83,7 +83,7 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
     return res_dir_name
 
 
-def evaluate_test_set(config_path, results_path, test_songs, valid_songs=None, segmented=False):
+def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_songs=None, segmented=False):
     if segmented:
         print("Evaluating for segmented input")
         res_dir_name = results_path + '/segmented'
@@ -102,16 +102,17 @@ def evaluate_test_set(config_path, results_path, test_songs, valid_songs=None, s
         print("No test set provided, validation set will be used")
         test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=segmented)
 
-    model = make_model(config_path=config_path)
+    if model == None:
+        model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
     roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
+        model, test_set, segmented=segmented, results_path=res_dir_name
     )
 
     print(f"MAP: {round(mean_average_precision,3)}")
 
-    mrr = mean_reprocical_rank(model, test_set, segmented=config['test']['segmented'])
+    mrr = mean_reprocical_rank(model, test_set, segmented=segmented)
     print(f"MRR: {round(mrr, 3)}")
 
     try:
@@ -122,7 +123,7 @@ def evaluate_test_set(config_path, results_path, test_songs, valid_songs=None, s
     clf = ThresholdClassifier(model, thr)
 
     df = generate_metrics(
-        clf, test_set, segmented=config['test']['segmented'], results_path=res_dir_name
+        clf, test_set, segmented=segmented, results_path=res_dir_name
     )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)

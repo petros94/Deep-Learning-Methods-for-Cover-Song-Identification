@@ -50,8 +50,5 @@
     "patience": 1,
     "checkpoints_path": "checkpoints/",
     "results_path": "results/"
-  },
-  "test": {
-    "segmented": false
   }
 }
