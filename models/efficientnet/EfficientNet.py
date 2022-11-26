@@ -11,7 +11,7 @@ class EfficientNet(nn.Module):
     self.efficient_net = torchvision.models.efficientnet_b0()
     
     print(self.efficient_net)
-    print(self.efficient_net.children())
+    print(list(self.efficient_net.children()))
     # over-write the first conv layer to be able to read MNIST images
     # as resnet18 reads (3,x,x) where 3 is RGB channels
     # whereas MNIST has (1,x,x) where 1 is a gray-scale channel
