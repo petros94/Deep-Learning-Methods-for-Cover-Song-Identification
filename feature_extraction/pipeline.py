@@ -76,7 +76,7 @@ def concat_csvs(csv_paths, output_csv_path):
         to_be_added.columns = list(COL_NAMES.values())[:len(to_be_added.columns)]
         
         output_links = output_links.drop(to_be_deleted_ids)
-        output_links = pd.concat([output_links, to_be_added])
+        output_links = pd.concat([output_links, to_be_added]).reset_index(drop=True)
 
     output_links.to_csv(output_csv_path)
 
