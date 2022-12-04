@@ -69,7 +69,6 @@ def concat_csvs(csv_paths, output_csv_path):
                     )
                     new_links = [links_list_1[0]] + union(links_list_1[1:], links_list_2[1:])
                     to_be_deleted_ids.append(idx_2)
-                    break
                 
             to_be_added.append(new_links)
 
