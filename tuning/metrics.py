@@ -115,6 +115,7 @@ def mean_reprocical_rank(model, data_set, segmented):
                 # N X 1 X num_feats X num_samples, N
                 (data, labels) = data_set[i]
                 data = data.type(torch.FloatTensor).to(device)
+                labels = labels.to(device)
 
                 embeddings = model(data)
 
@@ -135,7 +136,7 @@ def mean_reprocical_rank(model, data_set, segmented):
             return mrr
         else:
             embeddings = []
-            labels = torch.tensor(data_set.labels)
+            labels = torch.tensor(data_set.labels).to(device)
             for frames, label in zip(data_set.frames, data_set.labels):
                 x = frames.to(device)
                 embeddings.append(model(x))

@@ -48,10 +48,10 @@ class CNN(nn.Module):
     def forward(self, x):
         batch_size, feature_size = x.size(0), self.channels[-1]
         out = self.features(x)
+        out = self.linear(out)
         
         # squeeze last dimensions
         out = out.view(batch_size, feature_size)
-        out = self.linear(out)
         # normalize embeddings
         return nn.functional.normalize(out)
     
