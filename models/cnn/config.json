@@ -1,5 +1,5 @@
 {
-    "layers": 6,
+    "layers": 5,
     "in_channels": 1,
     "channels": [
         64,

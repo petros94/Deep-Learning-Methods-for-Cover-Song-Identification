@@ -41,8 +41,8 @@
   },
   "loss": "triplet",
   "features": {
-    "n_batches": 512,
-    "songs_per_batch": 64,
+    "n_batches": 256,
+    "songs_per_batch": 256,
     "input": "hpcp",
     "frame_size": 3600,
     "scale": [
