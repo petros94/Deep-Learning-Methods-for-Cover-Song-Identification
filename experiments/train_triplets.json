@@ -39,7 +39,7 @@
     "config_path": "models/cnn/config.json",
     "checkpoint_path": null
   },
-  "loss": "triplet",
+  "loss": "angular",
   "features": {
     "n_batches": 256,
     "songs_per_batch": 256,

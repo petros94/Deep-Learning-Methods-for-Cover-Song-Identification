@@ -5,6 +5,7 @@ click==8.1.3
 idna==3.3
 joblib==1.1.0
 kaleido==0.2.1
+matplotlib
 mypy-extensions==0.4.3
 numpy==1.23.3
 pandas==1.4.4

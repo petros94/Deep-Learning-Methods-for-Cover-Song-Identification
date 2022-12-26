@@ -9,8 +9,8 @@ from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import split_songs
 from utils.visualization import visualize_losses
-from tuning.roc import generate_ROC
-from tuning.metrics import generate_metrics, mean_reprocical_rank
+from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics
+from tuning.classification_metrics import generate_metrics as generate_classification_metrics
 
 
 def execute_single(config_path: str = "experiments/experiment_config.json"):
@@ -106,13 +106,9 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
-    roc_stats, mean_average_precision = generate_ROC(
-        model, test_set, segmented=segmented, results_path=res_dir_name
-    )
+    roc_stats, mean_average_precision, mrr = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
 
     print(f"MAP: {round(mean_average_precision,3)}")
-
-    mrr = mean_reprocical_rank(model, test_set, segmented=segmented)
     print(f"MRR: {round(mrr, 3)}")
 
     try:
@@ -122,7 +118,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
 
     clf = ThresholdClassifier(model, thr)
 
-    df = generate_metrics(
+    df = generate_classification_metrics(
         clf, test_set, segmented=segmented, results_path=res_dir_name
     )
 
