@@ -6,11 +6,8 @@ from sklearn.metrics import (
     precision_recall_curve
 )
 import plotly.express as px
-import matplotlib.pyplot as plt
 import torch
-import random
 import pandas as pd
-from torch.nn import functional as F
 
 from utils.generic import get_device
 from training.miners import RandomTripletMiner
@@ -21,12 +18,12 @@ def generate_metrics(model, data_set, segmented, results_path):
     if segmented:
         distances, clf_labels = generate_posteriors_segments(model, data_set)
     else:
-        distances, clf_labels = generate_posteriors_full(model, data_set, results_path)
+        distances, clf_labels = generate_posteriors_full(model, data_set)
         
     df = generate_ROC(distances, clf_labels, results_path)
     ap = average_precision(distances, clf_labels)
     mrr = mean_reprocical_rank(model, data_set, segmented)
-    df_prc = generate_PRC(distances, clf_labels)
+    df_prc = generate_PRC(distances, clf_labels, results_path)
     return df, ap, mrr
     
     
