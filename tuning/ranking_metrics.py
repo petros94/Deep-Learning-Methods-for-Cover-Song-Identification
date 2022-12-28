@@ -184,7 +184,7 @@ def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
     ap = average_precision_score(clf_labels, 2-distances)
 
     # Create a Plotly area plot using the precision, recall, and thresholds arrays
-    fig = px.area(
+    fig = px.line(
         data_frame=df,
         x="recall",
         y="precision",
