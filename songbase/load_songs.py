@@ -14,24 +14,30 @@ def from_config(config_path: str = "songbase/config.json"):
         config = json.load(f)
 
     train_songs = {}
-    for dataset in config["train_datasets"]:
-        songs = load_songs(
-            type=dataset["type"],
-            songs_dir=dataset["path"],
-            features=config["representation"],
-        )
-        songs = sample_songs(songs, n_samples=dataset["n_samples"])
-        train_songs.update(songs)
+    try:
+        for dataset in config["train_datasets"]:
+            songs = load_songs(
+                type=dataset["type"],
+                songs_dir=dataset["path"],
+                features=config["representation"],
+            )
+            songs = sample_songs(songs, n_samples=dataset["n_samples"])
+            train_songs.update(songs)
+    except KeyError:
+        print("No train datasets supplied.")
 
     test_songs = {}
-    for dataset in config["test_datasets"]:
-        songs = load_songs(
-            type=dataset["type"],
-            songs_dir=dataset["path"],
-            features=config["representation"],
-        )
-        songs = sample_songs(songs, n_samples=dataset["n_samples"])
-        test_songs.update(songs)
+    try:
+        for dataset in config["test_datasets"]:
+            songs = load_songs(
+                type=dataset["type"],
+                songs_dir=dataset["path"],
+                features=config["representation"],
+            )
+            songs = sample_songs(songs, n_samples=dataset["n_samples"])
+            test_songs.update(songs)
+    except KeyError:
+        print("No test datasets supplied.")
 
     return train_songs, test_songs
 
