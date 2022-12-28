@@ -190,7 +190,7 @@ def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
         y="precision",
         title=f"Precision-Recall Curve (AP={ap:.4f})",
         labels=dict(x="Recall", y="Precision"),
-        hover_data=["thresholds"],
+        hover_data=["thr"],
         width=700,
         height=500,
     )
