@@ -179,7 +179,7 @@ def mean_reprocical_rank(model, data_set, segmented):
 def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
     # Use the precision_recall_curve function to get the precision, recall, and thresholds arrays
     precision, recall, thresholds = precision_recall_curve(clf_labels, 2-distances)
-    df = pd.DataFrame({"precision": precision, "recall": recall, "thr": thresholds})
+    df = pd.DataFrame({"precision": precision[:-1], "recall": recall[:-1], "thr": thresholds})
     # Compute the average precision score
     ap = average_precision_score(clf_labels, 2-distances)
 
@@ -190,14 +190,10 @@ def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
         y="precision",
         title=f"Precision-Recall Curve (AP={ap:.4f})",
         labels=dict(x="Recall", y="Precision"),
-        hover_data=["thr"],
+        hover_data=["thresholds"],
         width=700,
         height=500,
     )
-    # Add a horizontal line at y=0
-    fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=0)
-    # Add a vertical line at x=0
-    fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=0, y0=0, y1=1)
 
     # Update the y-axis to have the same scale as the x-axis
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
