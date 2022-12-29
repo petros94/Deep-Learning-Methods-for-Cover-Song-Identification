@@ -7,15 +7,22 @@
         {
             "type": "covers80",
             "path": [
-                "/content/hpcps80/content/hpcps80/"
+                "tmp/content/greek_dataset_hpcp/"
+            ],
+            "n_samples": 1000
+        },
+        {
+            "type": "covers80",
+            "path": [
+                "tmp/content/dimitris_dataset_hpcp/"
             ],
             "n_samples": 1000
         }
     ],
     "model": {
         "type": "cnn",
-        "config_path": "checkpoints/example_model_05_11_22/config.json",
-        "checkpoint_path": "checkpoints/example_model_05_11_22/checkpoint.tar"
+        "config_path": "checkpoints/example_model_29_12_22/config.json",
+        "checkpoint_path": "checkpoints/example_model_29_12_22/checkpoint.tar"
     },
     "loss": "angular",
     "features": {

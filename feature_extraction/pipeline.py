@@ -116,6 +116,8 @@ def convert_songs_to_features(
         feature = "XWAV"
 
     for dir in tqdm(entries):
+        if dir == '.DS_Store':
+            continue
         subdir = os.listdir(origin_path + "/" + dir)
         songs[dir] = []
         for song in subdir:

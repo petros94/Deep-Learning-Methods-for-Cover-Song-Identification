@@ -106,6 +106,6 @@ def getCENSLibrosa(XAudio):
 
 def speech_file_to_array_fn(path):
     speech_array, _sampling_rate = torchaudio.load(path)
-    resampler = torchaudio.transforms.Resample(22050)
+    resampler = torchaudio.transforms.Resample(_sampling_rate, 16000)
     speech = resampler(speech_array).squeeze().numpy()
     return speech

@@ -13,7 +13,7 @@ from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics
 from tuning.classification_metrics import generate_metrics as generate_classification_metrics
 
 
-def execute_single(config_path: str = "experiments/experiment_config.json"):
+def execute_single(config_path: str = "experiments/train_triplets.json"):
     print("Executing single experiment")
     with open(config_path, "r") as f:
         config = json.load(f)
