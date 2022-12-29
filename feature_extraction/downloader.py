@@ -5,7 +5,7 @@ import argparse
 class YoutubeDownloader:        
     def download(self, path, link: str):
         os.chdir(path)
-        os.system(f'yt-dlp -x --audio-format mp3 --audio-quality 0 "{link}"')
+        os.system(f'yt-dlp -x --audio-format wav --audio-quality 0 "{link}"')
         
 if __name__ == '__main__':
     curr_path = os.path.curdir
