@@ -112,6 +112,8 @@ def convert_songs_to_features(
         feature = "XHPCP"
     elif feature == "cens":
         feature = "XCENS"
+    elif feature == "wav":
+        feature = "XWAV"
 
     for dir in tqdm(entries):
         subdir = os.listdir(origin_path + "/" + dir)

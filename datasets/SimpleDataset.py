@@ -8,8 +8,10 @@ class SimpleDataset:
     
         self.frames = []
         self.labels = []
+        self.song_names = []
         for song_id, covers in songs.items():
             for cover in covers:
                 repr = cover['repr']
                 self.frames.append(segment_and_scale(repr, frame_size=None, scale=scale))
                 self.labels.append(self.label_mapping[song_id])
+                self.song_names.append(cover['cover_id'])

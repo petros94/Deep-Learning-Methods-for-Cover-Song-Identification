@@ -1,5 +1,6 @@
 import numpy as np
 import librosa
+import torchaudio
 from essentia import Pool, array
 import essentia.standard as ess
 
@@ -13,6 +14,8 @@ class FeatureExtractor:
             self.extract = self.generate_hpcp
         elif features == 'mfcc':
             self.extract = self.generate_mfcc
+        elif features == 'wav':
+            self.extract = self.generate_wav
     
     def generate_mfcc(self, filename):
         hopSize=512
@@ -33,6 +36,10 @@ class FeatureExtractor:
         XCENS = getCENSLibrosa(XAudio)
         XCENS = (XCENS - np.mean(XCENS)) / np.std(XCENS)
         return XCENS
+
+    def generate_wav(self, filename):
+        XWAV = speech_file_to_array_fn(filename)
+        return XWAV
        
      
 def getAudioLibrosa(filename):
@@ -96,3 +103,9 @@ def getCENSLibrosa(XAudio):
     X = librosa.feature.chroma_cens(XAudio, hop_length=512)
     X = np.array(X, dtype = np.float32)
     return X
+
+def speech_file_to_array_fn(path):
+    speech_array, _sampling_rate = torchaudio.load(path)
+    resampler = torchaudio.transforms.Resample(22050)
+    speech = resampler(speech_array).squeeze().numpy()
+    return speech

@@ -65,7 +65,7 @@ def execute_single(config_path: str = "experiments/experiment_config.json"):
     return res_dir_name, chk_dir_name
 
 
-def evaluate_model(config_path: str = "experiments/experiment_config.json"):
+def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json", segmented=None):
     with open(config_path, "r") as f:
         config = json.load(f)
 
@@ -76,9 +76,12 @@ def evaluate_model(config_path: str = "experiments/experiment_config.json"):
 
     print("Loading songs")
     _, test_songs = from_config(config_path=config_path)
-    
-    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=True)
-    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=False)
+
+    if segmented is None:
+        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=True)
+        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=False)
+    else:
+        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=segmented)
 
     return res_dir_name
 

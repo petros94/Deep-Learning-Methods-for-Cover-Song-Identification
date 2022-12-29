@@ -5,6 +5,7 @@ from sklearn.metrics import (
     average_precision_score,
     precision_recall_curve
 )
+from sklearn.manifold import TSNE
 import plotly.express as px
 import torch
 import pandas as pd
@@ -18,12 +19,16 @@ def generate_metrics(model, data_set, segmented, results_path):
     if segmented:
         distances, clf_labels = generate_posteriors_segments(model, data_set)
     else:
-        distances, clf_labels = generate_posteriors_full(model, data_set)
+        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
         
     df = generate_ROC(distances, clf_labels, results_path)
     ap = average_precision(distances, clf_labels)
     mrr = mean_reprocical_rank(model, data_set, segmented)
     df_prc = generate_PRC(distances, clf_labels, results_path)
+
+    if not segmented:
+        generate_tsne(embeddings, song_labels, cover_names)
+
     return df, ap, mrr
     
     
@@ -65,15 +70,19 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
     model.type(torch.FloatTensor).to(device)
     miner = RandomTripletMiner
     embeddings = []
+    song_labels = []
+    cover_names = []
     distances = []
     clf_labels = []
     with torch.no_grad():
-        for frames, label in zip(data_set.frames, data_set.labels):
+        for frames, song_label, cover_name in zip(data_set.frames, data_set.labels, data_set.song_names):
             x = frames.to(device)
             embeddings.append(model(x))
+            song_labels.append(song_label)
+            cover_names.append(cover_name)
             
         embeddings = torch.cat(embeddings, dim=0)
-        
+
         for i in range(128):
             a, p, n = miner(embeddings, torch.tensor(data_set.labels))
             
@@ -87,7 +96,7 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
             clf_labels.extend([0] * neg_dist.size()[0])
             
         distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
-        return distances, clf_labels
+        return distances, clf_labels, embeddings, song_labels, cover_names
     
             
 def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
@@ -207,3 +216,12 @@ def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
     # Display the plot
     fig.show()
     return df
+
+def generate_tsne(embeddings: torch.Tensor, song_labels: list, cover_names: list) -> None:
+    X = embeddings.cpu().numpy()
+    X_embed = TSNE(n_components=2, learning_rate='auto',
+                   init='random', perplexity=3).fit_transform(X)
+
+    y = np.array(song_labels)
+    fig = px.scatter(x=X_embed[:, 0], y=X_embed[:, 1], color=y, hover_name=cover_names)
+    fig.show()

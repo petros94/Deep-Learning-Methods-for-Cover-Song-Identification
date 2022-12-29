@@ -114,6 +114,8 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
             mat_feature = "XHPCP"
         elif feature == "cens":
             mat_feature = "XCENS"
+        elif feature == "wav":
+            mat_feature = "XWAV"
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
@@ -139,7 +141,6 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
 
     print(f"Total: {len(songs[features[0]])}, skipped: {skipped_counter}")
     return merge_song_representations(songs)
-
 
 def merge_song_representations(songs):
     """Merge song representations.
