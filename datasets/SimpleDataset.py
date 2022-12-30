@@ -15,3 +15,9 @@ class SimpleDataset:
                 self.frames.append(segment_and_scale(repr, frame_size=None, scale=scale))
                 self.labels.append(self.label_mapping[song_id])
                 self.song_names.append(cover['cover_id'])
+
+    def __len__(self):
+        return len(self.song_names)
+
+    def __getitem__(self, item):
+        return self.frames[item], self.labels[item], self.song_names[item]

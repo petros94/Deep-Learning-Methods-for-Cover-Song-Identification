@@ -35,8 +35,8 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
 
     train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
-    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
-    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
+    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=False if config['representation'] == "wav" else True)
+    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False if config['representation'] == "wav" else True)
     
     print(
         "Created training set: {} samples, valid set: {} samples".format(
@@ -59,7 +59,8 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
     
-    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=True)
+    if config['representation'] != "wav":
+        evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=True)
     evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=False)
     
     return res_dir_name, chk_dir_name

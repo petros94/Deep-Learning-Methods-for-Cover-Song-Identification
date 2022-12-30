@@ -4,7 +4,7 @@ from models.cnn.cnn import from_config as make_cnn
 from models.lstm.lstm import from_config as make_lstm
 from models.vit.vit import from_config as make_vit
 from models.efficientnet.EfficientNet import from_config as make_efficientnet
-from models.wav2vec.wav2vec import from_config as make_wav2vec
+from models.embeddings.embeddings import from_config as make_wav2vec
 import torch
 from utils.generic import get_device
 
