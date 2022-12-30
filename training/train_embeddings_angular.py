@@ -128,7 +128,7 @@ def calculate_embeddings(dataset):
     labels = []
     for i in range(len(dataset)):
         frames, label, song_name = dataset[i]
-        frames = torch.tensor(frames)
+        frames = torch.tensor(frames).squeeze(0).squeeze(0).squeeze(0).to(device)
         print(frames.size())
 
         inputs = wav2vec_feature_extractor(frames, sampling_rate=16000, return_tensors="pt", padding=False)
