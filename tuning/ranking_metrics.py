@@ -35,20 +35,22 @@ def generate_metrics(model, data_set, segmented, results_path):
 def generate_embeddings_metrics(model, data_set, results_path):
     class TempClass:
         def __init__(self, frames, labels, song_names):
-            self.frames = frames
+            self.frames = frames.unsqueeze(1)
             self.labels = labels
             self.song_names = song_names
 
     embeddings, song_labels, cover_names = model.calculate_embeddings(data_set)
 
-    distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, TempClass(embeddings, song_labels, cover_names))
+    distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, TempClass(embeddings,
+                                                                                                            song_labels,
+                                                                                                            cover_names))
     df = generate_ROC(distances, clf_labels, results_path)
     ap = average_precision(distances, clf_labels)
-    mrr = mean_reprocical_rank(model, data_set, False)
     df_prc = generate_PRC(distances, clf_labels, results_path)
     generate_tsne(embeddings, song_labels, cover_names)
-    return df, ap, mrr
-    
+    return df, ap, pd.DataFrame()
+
+
 def generate_posteriors_segments(
     model, data_set: TripletDataset): 
     
@@ -65,7 +67,7 @@ def generate_posteriors_segments(
             data = data.type(torch.FloatTensor).to(device)
 
             embeddings = model(data)
-                
+
             a, p, n = miner(embeddings, labels)
 
             pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
@@ -97,12 +99,12 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
             embeddings.append(model(x))
             song_labels.append(song_label)
             cover_names.append(cover_name)
-            
+
         embeddings = torch.cat(embeddings, dim=0)
 
         for i in range(128):
             a, p, n = miner(embeddings, torch.tensor(data_set.labels))
-            
+
             pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
             neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
 
@@ -111,13 +113,13 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
 
             distances.append(neg_dist)
             clf_labels.extend([0] * neg_dist.size()[0])
-            
+
         distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
         return distances, clf_labels, embeddings, song_labels, cover_names
-    
-            
+
+
 def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
-    fpr, tpr, thresholds = roc_curve(clf_labels, 2-distances)
+    fpr, tpr, thresholds = roc_curve(clf_labels, 2 - distances)
     df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})
     roc_auc = auc(fpr, tpr)
 
@@ -145,8 +147,9 @@ def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
 
 
 def average_precision(distances: np.ndarray, clf_labels: np.ndarray):
-    return average_precision_score(clf_labels, 2-distances)
-    
+    return average_precision_score(clf_labels, 2 - distances)
+
+
 def mean_reprocical_rank(model, data_set, segmented):
     model.eval()
     device = get_device()
@@ -182,12 +185,12 @@ def mean_reprocical_rank(model, data_set, segmented):
             for frames, label in zip(data_set.frames, data_set.labels):
                 x = frames.to(device)
                 embeddings.append(model(x))
-            
+
             embeddings = torch.cat(embeddings, dim=0)
             # Size N x N
             rr = []
             distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-            
+
             for d, lab in zip(distance_matrix, labels):
                 sorted_ids_by_dist = d.argsort()
                 sorted_labels_by_dist = labels[sorted_ids_by_dist]
@@ -204,10 +207,10 @@ def mean_reprocical_rank(model, data_set, segmented):
 
 def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
     # Use the precision_recall_curve function to get the precision, recall, and thresholds arrays
-    precision, recall, thresholds = precision_recall_curve(clf_labels, 2-distances)
+    precision, recall, thresholds = precision_recall_curve(clf_labels, 2 - distances)
     df = pd.DataFrame({"precision": precision[:-1], "recall": recall[:-1], "thr": thresholds})
     # Compute the average precision score
-    ap = average_precision_score(clf_labels, 2-distances)
+    ap = average_precision_score(clf_labels, 2 - distances)
 
     # Create a Plotly area plot using the precision, recall, and thresholds arrays
     fig = px.line(
@@ -233,6 +236,7 @@ def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
     # Display the plot
     fig.show()
     return df
+
 
 def generate_tsne(embeddings: torch.Tensor, song_labels: list, cover_names: list) -> None:
     X = embeddings.cpu().numpy()
