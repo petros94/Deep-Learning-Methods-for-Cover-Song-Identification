@@ -1,5 +1,8 @@
 import json
 import os
+
+import pandas as pd
+
 from datasets.factory import make_dataset
 from datetime import datetime
 from models.classifier import ThresholdClassifier
@@ -9,7 +12,7 @@ from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import split_songs
 from utils.visualization import visualize_losses
-from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics
+from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics, generate_embeddings_metrics
 from tuning.classification_metrics import generate_metrics as generate_classification_metrics
 
 
@@ -110,7 +113,10 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
-    roc_stats, mean_average_precision, mrr = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
+    if config["representation"] == ['wav']:
+        roc_stats, mean_average_precision, mrr = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
+    else:
+        roc_stats, mean_average_precision, mrr = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
 
     print(f"MAP: {round(mean_average_precision,3)}")
     print(f"MRR: {round(mrr, 3)}")
@@ -122,9 +128,12 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
 
     clf = ThresholdClassifier(model, thr)
 
-    df = generate_classification_metrics(
-        clf, test_set, segmented=segmented, results_path=res_dir_name
-    )
+    if config["representation"] == ['wav']:
+        df = pd.DataFrame()
+    else:
+        df = generate_classification_metrics(
+            clf, test_set, segmented=segmented, results_path=res_dir_name
+        )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
 

@@ -30,7 +30,24 @@ def generate_metrics(model, data_set, segmented, results_path):
         generate_tsne(embeddings, song_labels, cover_names)
 
     return df, ap, mrr
-    
+
+
+def generate_embeddings_metrics(model, data_set, results_path):
+    class TempClass:
+        def __init__(self, frames, labels, song_names):
+            self.frames = frames
+            self.labels = labels
+            self.song_names = song_names
+
+    embeddings, song_labels, cover_names = model.calculate_embeddings(data_set)
+
+    distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, TempClass(embeddings, song_labels, cover_names))
+    df = generate_ROC(distances, clf_labels, results_path)
+    ap = average_precision(distances, clf_labels)
+    mrr = mean_reprocical_rank(model, data_set, False)
+    df_prc = generate_PRC(distances, clf_labels, results_path)
+    generate_tsne(embeddings, song_labels, cover_names)
+    return df, ap, mrr
     
 def generate_posteriors_segments(
     model, data_set: TripletDataset): 

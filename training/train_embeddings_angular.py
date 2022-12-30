@@ -4,7 +4,6 @@ import random
 
 from datasets.SimpleDataset import SimpleDataset
 from utils.generic import get_device
-from transformers import AutoConfig, Wav2Vec2FeatureExtractor, Wav2Vec2ForSequenceClassification
 
 from pytorch_metric_learning import miners, losses, distances
 from datasets.TripletDataset import TripletDataset
@@ -28,8 +27,8 @@ def train_embeddings_loss(model: torch.nn.Module,
     miner = miners.AngularMiner(angle=20, distance=distance)
     valid_miner = miners.AngularMiner(angle=0, distance=distance)
 
-    train_emb, train_labels = calculate_embeddings(train_set)
-    valid_emb, valid_labels = calculate_embeddings(valid_set)
+    train_emb, train_labels, _ = model.calculate_embeddings(train_set)
+    valid_emb, valid_labels, _ = model.calculate_embeddings(valid_set)
     
     best_loss = 1000000
     current_patience = 0
@@ -112,31 +111,3 @@ def train_embeddings_loss(model: torch.nn.Module,
     model.load_state_dict(checkpoint['model_state_dict'])
     
     return losses_history
-
-def calculate_embeddings(dataset):
-    device = get_device()
-    model_name_or_path = "m3hrdadfi/wav2vec2-base-100k-gtzan-music-genres"
-    wav2vec_model_config = AutoConfig.from_pretrained(model_name_or_path)
-    wav2vec_feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_name_or_path)
-    wav2vec_pretrained_model = Wav2Vec2ForSequenceClassification.from_pretrained(model_name_or_path,
-                                                                              output_hidden_states=True).to(device)
-
-    for param in wav2vec_pretrained_model.parameters():
-        param.requires_grad = False
-
-    embeddings = []
-    labels = []
-    for i in range(len(dataset)):
-        frames, label, song_name = dataset[i]
-        frames = torch.tensor(frames).squeeze(0).squeeze(0).squeeze(0).to(device)
-        print(frames.size())
-
-        inputs = wav2vec_feature_extractor(frames, sampling_rate=16000, return_tensors="pt", padding=False)
-        with torch.no_grad():
-            wav2vec_output = wav2vec_pretrained_model(**inputs)
-            last_hidden_layer_emb = torch.mean(wav2vec_output.hidden_states[-1], dim=1)
-            # last_conv_layer_emb = self.pretrained_model(**inputs).extract_features
-            embeddings.append(last_hidden_layer_emb)
-            labels.append(label)
-
-    return torch.stack(embeddings, dim=0), torch.tensor(labels)
