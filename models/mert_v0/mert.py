@@ -33,16 +33,14 @@ class MERT(nn.Module):
             hash_key = str(song_ids)
 
         if hash_key is not None and hash_key in self.cache.keys():
-            outputs = self.cache[hash_key]
+            time_reduced_hidden_states = self.cache[hash_key].to(device)
         else:
             with torch.no_grad():
                 outputs = self.model(input_values=x, output_hidden_states=True)
-
-        if hash_key is not None:
-            self.cache[hash_key] = outputs
-
-        all_layer_hidden_states = torch.stack(outputs.hidden_states).squeeze()
-        time_reduced_hidden_states = all_layer_hidden_states.mean(0).squeeze(0)
+                all_layer_hidden_states = torch.stack(outputs.hidden_states).squeeze()
+                time_reduced_hidden_states = all_layer_hidden_states.mean(0).squeeze(0)
+            print("added to cache")
+            self.cache[hash_key] = time_reduced_hidden_states.to("cpu")
 
         output, (h_n, c_n) = self.lstm(time_reduced_hidden_states)
         output = output[:, -1, :]
