@@ -1,0 +1,39 @@
+{
+  "representation": [
+    "wav"
+  ],
+  "train_datasets": [
+    {
+      "type": "covers80",
+      "path": [
+        "/content/full_dataset_wav/content/Diplomatiki Petrou - full dataset 4_12_wav/"
+      ],
+      "n_samples": 10
+    }
+  ],
+  "test_datasets": [],
+  "model": {
+    "type": "mert",
+    "config_path": "models/mert-v0/config.json",
+    "checkpoint_path": null
+  },
+  "loss": "angular",
+  "features": {
+    "n_batches": 256,
+    "songs_per_batch": 32,
+    "input": "wav",
+    "frame_size": 1300000,
+    "scale": [
+      1,
+      1
+    ]
+  },
+  "train": {
+    "train_perc": 0.8,
+    "n_epochs": 15,
+    "lr": 0.0002,
+    "patience": 1,
+    "checkpoints_path": "checkpoints/",
+    "results_path": "results/"
+  }
+}

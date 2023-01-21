@@ -17,8 +17,12 @@ class MERT(nn.Module):
         self.model = HubertModel.from_pretrained("m-a-p/MERT-v0")
 
     def forward(self, x):
-        inputs = self.processor(x, sampling_rate=16000, return_tensors="pt")
-        outputs = self.model(**inputs, output_hidden_states=True)
+        batch_size = x.size(0)
+        sequence_length = x.size(-1)
+        x = x.view(batch_size, sequence_length)
+        x = torch.FloatTensor(x).to(device)
+
+        outputs = self.model(input_values=x, output_hidden_states=True)
         all_layer_hidden_states = torch.stack(outputs.hidden_states).squeeze()
         time_reduced_hidden_states = all_layer_hidden_states.mean(-2)
 

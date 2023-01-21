@@ -52,7 +52,7 @@ class TripletDataset(torch.utils.data.Dataset):
             for song_id in P:
                 int_label = self.int_mapping[song_id]
                 if self.online:
-                    k = random.randint(0, len(self.song_segs[song_id])) #Select a random part of the songs
+                    k = random.randint(0, len(self.song_segs[song_id])-1) #Select a random part of the songs
                     samples.append((song_id, k))
                     labels.extend([int_label]*self.song_segs[song_id][k].size(0))
                     self.total_samples += self.song_segs[song_id][k].size(0)
