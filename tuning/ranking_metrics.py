@@ -63,10 +63,18 @@ def generate_posteriors_segments(
     with torch.no_grad():
         for i in range(len(data_set)):
             # N X 1 X num_feats X num_samples, N
-            (data, labels) = data_set[i]
+            batch = data_set[i]
+            data = batch[0].to(device)
+            labels = batch[1].to(device)
+
+
             data = data.type(torch.FloatTensor).to(device)
 
-            embeddings = model(data)
+            if len(batch) > 2:
+                song_ids = batch[2]
+                embeddings = model(data, song_ids)
+            else:
+                embeddings = model(data)
 
             a, p, n = miner(embeddings, labels)
 

@@ -113,7 +113,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         model = make_model(config_path=config_path)
     
     print("Plot ROC and calculate metrics")
-    if config["representation"] == ['wav']:
+    if config["model"]["type"] == "embeddings":
         roc_stats, mean_average_precision, mrr = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
     else:
         roc_stats, mean_average_precision, mrr = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)

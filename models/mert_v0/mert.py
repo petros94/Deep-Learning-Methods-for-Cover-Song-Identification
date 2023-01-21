@@ -15,20 +15,38 @@ class MERT(nn.Module):
 
         # loading our model weights
         self.model = HubertModel.from_pretrained("m-a-p/MERT-v0")
+        for param in self.model.parameters():
+            param.requires_grad = False
 
-    def forward(self, x):
+        self.lstm = nn.LSTM(input_size=768, hidden_size=512, batch_first=True)
+
+        self.cache = {}
+
+    def forward(self, x, song_ids=None):
         batch_size = x.size(0)
         sequence_length = x.size(-1)
         x = x.view(batch_size, sequence_length)
-        x = torch.FloatTensor(x).to(device)
+        x = torch.tensor(x, dtype=torch.float32).to(device)
 
-        outputs = self.model(input_values=x, output_hidden_states=True)
+        hash_key = None
+        if song_ids is not None:
+            hash_key = str(song_ids)
+
+        if hash_key is not None and hash_key in self.cache.keys():
+            outputs = self.cache[hash_key]
+        else:
+            with torch.no_grad():
+                outputs = self.model(input_values=x, output_hidden_states=True)
+
+        if hash_key is not None:
+            self.cache[hash_key] = outputs
+
         all_layer_hidden_states = torch.stack(outputs.hidden_states).squeeze()
-        time_reduced_hidden_states = all_layer_hidden_states.mean(-2)
+        time_reduced_hidden_states = all_layer_hidden_states.mean(0).squeeze(0)
 
-        aggregator = nn.Conv1d(in_channels=13, out_channels=1, kernel_size=1)
-        weighted_avg_hidden_states = aggregator(time_reduced_hidden_states.unsqueeze(0)).squeeze()
-        return weighted_avg_hidden_states
+        output, (h_n, c_n) = self.lstm(time_reduced_hidden_states)
+        output = output[:, -1, :]
+        return output
 
 def from_config(config_path: str):
     """Create a cnn model from configuration

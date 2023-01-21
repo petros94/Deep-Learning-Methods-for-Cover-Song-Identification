@@ -14,13 +14,13 @@
   "test_datasets": [],
   "model": {
     "type": "mert",
-    "config_path": "models/mert-v0/config.json",
+    "config_path": "models/mert_v0/config.json",
     "checkpoint_path": null
   },
   "loss": "angular",
   "features": {
     "n_batches": 256,
-    "songs_per_batch": 32,
+    "songs_per_batch": 4,
     "input": "wav",
     "frame_size": 1300000,
     "scale": [

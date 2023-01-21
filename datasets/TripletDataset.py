@@ -21,7 +21,7 @@ class TripletDataset(torch.utils.data.Dataset):
         """
         self.song_segs = {}
         self.int_mapping = {k: i for i,k in enumerate(list(self.songs.keys()))}
-        
+        to_be_deleted = []
         for song_id, covers in self.songs.items():
             segs = []
             for cover in covers:
@@ -36,8 +36,15 @@ class TripletDataset(torch.utils.data.Dataset):
             segs = [seg[: min_len] for seg in segs]
             
             # Size num_segs X num_covers X num_channels X num_features X frame_size
-            ret = torch.stack(segs, dim=1)
-            self.song_segs[song_id] = ret
+            try:
+                ret = torch.stack(segs, dim=1)
+                self.song_segs[song_id] = ret
+            except Exception as e:
+                print(e)
+                to_be_deleted.append(song_id)
+
+        for song_id in to_be_deleted:
+            del self.songs[song_id]
             
         
         # Create batches
@@ -47,6 +54,7 @@ class TripletDataset(torch.utils.data.Dataset):
         for b in range(self.n_batches):
             samples = []
             labels = []
+            song_ids = []
             P = sample_songs(self.songs, self.songs_per_batch).keys()
             
             for song_id in P:
@@ -55,6 +63,7 @@ class TripletDataset(torch.utils.data.Dataset):
                     k = random.randint(0, len(self.song_segs[song_id])-1) #Select a random part of the songs
                     samples.append((song_id, k))
                     labels.extend([int_label]*self.song_segs[song_id][k].size(0))
+                    song_ids.extend([song_id]*self.song_segs[song_id][k].size(0))
                     self.total_samples += self.song_segs[song_id][k].size(0)
                 else:
                     K = random.choice(self.song_segs[song_id])
@@ -62,26 +71,28 @@ class TripletDataset(torch.utils.data.Dataset):
                     labels.extend([int_label]*K.size(0))
                     self.total_samples += K.size(0)
 
-                
-            # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
-            samples = torch.cat(samples)
             labels = torch.tensor(labels)
+            if not self.online:
+                # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
+                samples = torch.cat(samples)
+                assert samples.dim() == 4
 
-            assert samples.dim() == 4
-            
-            self.batches.append((samples, labels))
+            if self.online:
+                self.batches.append((samples, labels, song_ids))
+            else:
+                self.batches.append((samples, labels))
             
         print(f"Total samples: {self.total_samples}")
         
     def __getitem__(self, idx):
         if self.online:
-            samples, labels = self.batches[idx]
+            samples, labels, song_ids = self.batches[idx]
             output = []
             for song_id, k in samples:
                 K = self.song_segs[song_id][k]
                 output.append(K)
             output = torch.cat(output)
-            return output, labels
+            return output, labels, song_ids
         else:
             return self.batches[idx]
     
