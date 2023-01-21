@@ -8,7 +8,7 @@ def train(model, train_set, valid_set, config_path, checkpoint_dir, results_dir)
     with open(config_path, "r") as f:
         config = json.load(f)
 
-    if config["representation"] == ["wav"]:
+    if config["model"]["type"] == "embeddings":
         return train_embeddings_loss(
             model,
             train_set,

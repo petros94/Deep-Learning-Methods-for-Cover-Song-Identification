@@ -38,8 +38,8 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
 
     train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
-    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=False if config['representation'] == ["wav"] else True)
-    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False if config['representation'] == ["wav"] else True)
+    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
+    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
     
     print(
         "Created training set: {} samples, valid set: {} samples".format(

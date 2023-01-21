@@ -11,7 +11,10 @@ def make_dataset(songs: dict, config_path: str, type: str, segmented: bool, n_ba
         
     if type not in AVAILABLE_TYPES:
         raise ValueError("Invalid type")
-    
+
+    if config['representation'] == ["wav"]:
+        return SimpleDataset(songs, config['features']['scale'])
+
     if segmented:
         if type in ('triplet', 'angular'):
             return TripletDataset(songs, 

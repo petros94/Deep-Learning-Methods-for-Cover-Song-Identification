@@ -4,12 +4,13 @@ from models.cnn.cnn import from_config as make_cnn
 from models.lstm.lstm import from_config as make_lstm
 from models.vit.vit import from_config as make_vit
 from models.efficientnet.EfficientNet import from_config as make_efficientnet
-from models.embeddings.embeddings import from_config as make_wav2vec
+from models.embeddings.embeddings import from_config as make_embeddings
+from models.mert_v0.mert import from_config as make_mert
 import torch
 from utils.generic import get_device
 
 
-AVAILABLE_TYPES = ["resnet18", "efficientnet", "cnn", "lstm", "vit", "wav2vec2"]
+AVAILABLE_TYPES = ["resnet18", "efficientnet", "cnn", "lstm", "vit", "embeddings", "mert"]
 
 
 def make_model(config_path: str = "models/config.json"):
@@ -41,8 +42,10 @@ def make_model(config_path: str = "models/config.json"):
         model = make_vit(config_path=config["model"]["config_path"])
     elif config["model"]["type"] == "efficientnet":
         model = make_efficientnet(config_path=config["model"]["config_path"])
-    elif config["model"]["type"] == "wav2vec2":
-        model = make_wav2vec(config_path=config["model"]["config_path"])
+    elif config["model"]["type"] == "embeddings":
+        model = make_embeddings(config_path=config["model"]["config_path"])
+    elif config["model"]["type"] == "mert":
+        model = make_mert(config_path=config["model"]["config_path"])
 
     if config["model"]["checkpoint_path"] is not None:
         loc = get_device()
