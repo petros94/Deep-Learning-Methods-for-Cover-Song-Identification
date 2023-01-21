@@ -62,7 +62,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
     
-    if config['representation'] != ["wav"]:
+    if config['model']['type'] != "embeddings":
         evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=True)
     evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=False)
     
