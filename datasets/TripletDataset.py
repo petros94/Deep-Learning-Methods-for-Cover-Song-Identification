@@ -5,12 +5,13 @@ import numpy as np
 from utils.generic import sample_songs, segment_and_scale
 
 class TripletDataset(torch.utils.data.Dataset):
-    def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33)):
+    def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33), online=False):
         print("Creating TripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
         
         self.songs = self.filter_per_size(songs, frame_size)
+        self.online = online
         print(f"Initial songs: {len(songs)}, after filtering: {len(self.songs)}")
         
         """
@@ -18,7 +19,7 @@ class TripletDataset(torch.utils.data.Dataset):
             "120345 (song_id)": torch.tensor of size num_segs X num_covers X num_channels X num_features X frame_size
         }
         """
-        song_segs = {}
+        self.song_segs = {}
         self.int_mapping = {k: i for i,k in enumerate(list(self.songs.keys()))}
         
         for song_id, covers in self.songs.items():
@@ -36,7 +37,7 @@ class TripletDataset(torch.utils.data.Dataset):
             
             # Size num_segs X num_covers X num_channels X num_features X frame_size
             ret = torch.stack(segs, dim=1)
-            song_segs[song_id] = ret
+            self.song_segs[song_id] = ret
             
         
         # Create batches
@@ -49,18 +50,23 @@ class TripletDataset(torch.utils.data.Dataset):
             P = sample_songs(self.songs, self.songs_per_batch).keys()
             
             for song_id in P:
-                K = random.choice(song_segs[song_id]) #Select a random part of the songs
-                samples.append(K)
-                
                 int_label = self.int_mapping[song_id]
-                
-                labels.extend([int_label]*K.size(0))
-                self.total_samples += K.size(0)
+                if self.online:
+                    k = random.randint(0, len(self.song_segs[song_id])) #Select a random part of the songs
+                    samples.append((song_id, k))
+                    labels.extend([int_label]*self.song_segs[song_id][k].size(0))
+                    self.total_samples += self.song_segs[song_id][k].size(0)
+                else:
+                    K = random.choice(self.song_segs[song_id])
+                    samples.append(K)
+                    labels.extend([int_label]*K.size(0))
+                    self.total_samples += K.size(0)
+
                 
             # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
             samples = torch.cat(samples)
             labels = torch.tensor(labels)
-            
+
             assert samples.dim() == 4
             
             self.batches.append((samples, labels))
@@ -68,7 +74,16 @@ class TripletDataset(torch.utils.data.Dataset):
         print(f"Total samples: {self.total_samples}")
         
     def __getitem__(self, idx):
-        return self.batches[idx]
+        if self.online:
+            samples, labels = self.batches[idx]
+            output = []
+            for song_id, k in samples:
+                K = self.song_segs[song_id][k]
+                output.append(K)
+            output = torch.cat(output)
+            return output, labels
+        else:
+            return self.batches[idx]
     
     def __len__(self):
         return len(self.batches)
