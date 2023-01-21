@@ -8,7 +8,7 @@
       "path": [
         "/content/full_dataset_wav/content/Diplomatiki Petrou - full dataset 4_12_wav/"
       ],
-      "n_samples": 10
+      "n_samples": 10000
     }
   ],
   "test_datasets": [],
@@ -20,9 +20,9 @@
   "loss": "angular",
   "features": {
     "n_batches": 256,
-    "songs_per_batch": 4,
+    "songs_per_batch": 16,
     "input": "wav",
-    "frame_size": 1300000,
+    "frame_size": 320000,
     "scale": [
       1,
       1
