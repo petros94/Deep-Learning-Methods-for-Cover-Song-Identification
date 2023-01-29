@@ -15,19 +15,13 @@ def make_dataset(songs: dict, config_path: str, type: str, segmented: bool, n_ba
     if config['model']['type'] == "embeddings":
         return SimpleDataset(songs, config['features']['scale'])
 
-    if config['model']['type'] == 'mert':
-        online = True
-    else:
-        online = False
-
     if segmented:
         if type in ('triplet', 'angular'):
             return TripletDataset(songs, 
                                 n_batches=n_batches if n_batches is not None else config['features']['n_batches'], 
                                 songs_per_batch=config['features']['songs_per_batch'],
                                 frame_size=config['features']['frame_size'],
-                                scale=config['features']['scale'],
-                                online=online)
+                                scale=config['features']['scale'])
     else:
         return SimpleDataset(songs, config['features']['scale'])
         
