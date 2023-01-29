@@ -26,8 +26,6 @@ class LSTM(nn.Module):
             out_features=output_size,
         )
         self.dropout = nn.Dropout(0.2)
-        # self.fc1 = nn.Linear(in_features=(2 if bidirectional else 1)*self.hidden_size, out_features=128)
-        # self.fc2 = nn.Linear(128, out_features=output_size)
 
     def attention(self, lstm_output, final_state):
         lstm_output = lstm_output.permute(1, 0, 2)
@@ -49,14 +47,15 @@ class LSTM(nn.Module):
         x = x.squeeze(1)
         x = x.permute(2, 0, 1)
         out_packed, (h, c) = self.lstm(x)
-        attn_output = self.attention(out_packed, h)
+        # attn_output = self.attention(out_packed, h)
         # cat = (
         #     torch.cat((h[-1, :, :], h[-2, :, :]), dim=1)
         #     if self.bidirectional
         #     else h[-1, :, :]
         # )
-        x = self.fc(attn_output.squeeze(0))
-        return x.view(-1, self.output_size)
+        out_packed = out_packed[-1, :, :]
+        out = self.fc(out_packed)
+        return out
 
 
 def from_config(config_path: str):

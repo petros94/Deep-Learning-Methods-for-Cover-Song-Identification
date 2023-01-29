@@ -1,7 +1,7 @@
 {
     "hidden_size": 256,
-    "num_layers": 1,
+    "num_layers": 2,
     "bidirectional": false,
     "input_size": 12,
-    "output_size": 128
+    "output_size": 256
 }
