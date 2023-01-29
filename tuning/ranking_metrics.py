@@ -70,7 +70,11 @@ def generate_posteriors_segments(
 
             data = data.type(torch.FloatTensor).to(device)
 
-            embeddings = model(data)
+            if len(batch) > 2:
+                song_ids = batch[2]
+                embeddings = model(data, song_ids)
+            else:
+                embeddings = model(data)
 
             a, p, n = miner(embeddings, labels)
 
