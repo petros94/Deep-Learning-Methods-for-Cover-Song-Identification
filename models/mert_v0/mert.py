@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import json
-from transformers import Wav2Vec2Processor, HubertModel
+from transformers import Wav2Vec2Processor, HubertForSequenceClassification, HubertConfig
 
 from utils.generic import get_device
 
@@ -14,39 +14,20 @@ class MERT(nn.Module):
         self.processor = Wav2Vec2Processor.from_pretrained("facebook/hubert-large-ls960-ft")
 
         # loading our model weights
-        self.model = HubertModel.from_pretrained("m-a-p/MERT-v0")
-        for param in self.model.parameters():
-            param.requires_grad = False
+        self.config = HubertConfig.from_pretrained("m-a-p/MERT-v0")
+        self.config.num_labels = 128
+        self.model = HubertForSequenceClassification.from_pretrained("m-a-p/MERT-v0", config=self.config)
+        self.model.freeze_feature_encoder()
+        self.model.freeze_base_model()
 
-        self.lstm = nn.LSTM(input_size=768, hidden_size=512, batch_first=True)
-
-        self.cache = {}
-
-    def forward(self, x, song_ids=None):
+    def forward(self, x):
         batch_size = x.size(0)
         sequence_length = x.size(-1)
         x = x.view(batch_size, sequence_length)
         x = torch.tensor(x, dtype=torch.float32).to(device)
-
-        hash_key = None
-        if song_ids is not None:
-            hash_key = str(song_ids)
-
-        if hash_key is not None and hash_key in self.cache.keys():
-            outputs = self.cache[hash_key]
-        else:
-            with torch.no_grad():
-                outputs = self.model(input_values=x, output_hidden_states=True)
-
-        if hash_key is not None:
-            self.cache[hash_key] = outputs
-
-        all_layer_hidden_states = torch.stack(outputs.hidden_states).squeeze()
-        time_reduced_hidden_states = all_layer_hidden_states.mean(0).squeeze(0)
-
-        output, (h_n, c_n) = self.lstm(time_reduced_hidden_states)
-        output = output[:, -1, :]
-        return output
+        with torch.no_grad():
+            outputs = self.model(input_values=x, output_hidden_states=True).logits
+        return outputs
 
 def from_config(config_path: str):
     """Create a cnn model from configuration
