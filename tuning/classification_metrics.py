@@ -36,10 +36,7 @@ def generate_metrics_segments(
     with torch.no_grad():
         for i in range(len(data_set)):
             # N X 1 X num_feats X num_samples, N
-            batch = data_set[i]
-            data = batch[0].to(device)
-            labels = batch[1].to(device)
-
+            (data, labels) = data_set[i]
             data = data.type(torch.FloatTensor).to(device)
 
             a, p, n = miner(None, labels)

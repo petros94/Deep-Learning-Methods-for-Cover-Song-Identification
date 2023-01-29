@@ -54,7 +54,6 @@ class TripletDataset(torch.utils.data.Dataset):
         for b in range(self.n_batches):
             samples = []
             labels = []
-            song_ids = []
             P = sample_songs(self.songs, self.songs_per_batch).keys()
             
             for song_id in P:
@@ -63,7 +62,6 @@ class TripletDataset(torch.utils.data.Dataset):
                     k = random.randint(0, len(self.song_segs[song_id])-1) #Select a random part of the songs
                     samples.append((song_id, k))
                     labels.extend([int_label]*self.song_segs[song_id][k].size(0))
-                    song_ids.extend([song_id]*self.song_segs[song_id][k].size(0))
                     self.total_samples += self.song_segs[song_id][k].size(0)
                 else:
                     K = random.choice(self.song_segs[song_id])
@@ -71,28 +69,26 @@ class TripletDataset(torch.utils.data.Dataset):
                     labels.extend([int_label]*K.size(0))
                     self.total_samples += K.size(0)
 
-            labels = torch.tensor(labels)
-            if not self.online:
-                # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
-                samples = torch.cat(samples)
-                assert samples.dim() == 4
 
-            if self.online:
-                self.batches.append((samples, labels, song_ids))
-            else:
-                self.batches.append((samples, labels))
+            # Samples are now a tensor of size P*K X num_channels X num_features X frame_size
+            samples = torch.cat(samples)
+            labels = torch.tensor(labels)
+
+            assert samples.dim() == 4
+
+            self.batches.append((samples, labels))
             
         print(f"Total samples: {self.total_samples}")
         
     def __getitem__(self, idx):
         if self.online:
-            samples, labels, song_ids = self.batches[idx]
+            samples, labels = self.batches[idx]
             output = []
             for song_id, k in samples:
                 K = self.song_segs[song_id][k]
                 output.append(K)
             output = torch.cat(output)
-            return output, labels, song_ids
+            return output, labels
         else:
             return self.batches[idx]
     

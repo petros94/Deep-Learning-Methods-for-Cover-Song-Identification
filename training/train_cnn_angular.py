@@ -48,16 +48,12 @@ def train_angular_loss(model: torch.nn.Module,
         mean_triplets = 0
         for i in range(len(train_set)):
             # N X 1 X num_feats X num_samples, N
-            batch = train_set[i]
-            data = batch[0].to(device)
-            labels = batch[1].to(device)
+            (data, labels) = train_set[i]
+            data = data.to(device)
+            labels = labels.to(device)
 
             optimizer.zero_grad()
-            if len(batch) > 2:
-                song_ids = batch[2]
-                embeddings = model(data, song_ids)
-            else:
-                embeddings = model(data)
+            embeddings = model(data)
             triplets = miner(embeddings, labels)
          
             loss = loss_func(embeddings, labels, triplets)
@@ -76,17 +72,10 @@ def train_angular_loss(model: torch.nn.Module,
         with torch.no_grad():
             for i in range(len(valid_set)):
                 # N X 1 X num_feats X num_samples, N
-                batch = valid_set[i]
-                data = batch[0].to(device)
-                labels = batch[1].to(device)
+                (data, labels) = valid_set[i]
+                data = data.to(device)
 
-                optimizer.zero_grad()
-                if len(batch) > 2:
-                    song_ids = batch[2]
-                    embeddings = model(data, song_ids)
-                else:
-                    embeddings = model(data)
-
+                embeddings = model(data)
                 triplets = valid_miner(embeddings, labels)
             
                 loss = loss_func(embeddings, labels, triplets)
