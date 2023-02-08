@@ -1,0 +1,19 @@
+{
+    "layers": 2,
+    "in_channels": 12,
+    "channels": [
+        64,
+        128
+    ],
+    "kernel_size": [3, 3],
+    "strides": [1, 2],
+    "padding": 1,
+    "activation": "relu",
+    "pool_size": 2,
+    "drop_prob": 0.25,
+    "hidden_size": 256,
+    "num_layers": 2,
+    "bidirectional": false,
+    "input_size": 128,
+    "output_size": 256
+}

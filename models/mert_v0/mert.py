@@ -25,8 +25,7 @@ class MERT(nn.Module):
         sequence_length = x.size(-1)
         x = x.view(batch_size, sequence_length)
         x = torch.tensor(x, dtype=torch.float32).to(device)
-        with torch.no_grad():
-            outputs = self.model(input_values=x, output_hidden_states=True).logits
+        outputs = self.model(input_values=x, output_hidden_states=True).logits
         return outputs
 
 def from_config(config_path: str):
