@@ -1,0 +1,25 @@
+{
+    "layers": 5,
+    "in_channels": 12,
+    "channels": [
+        64,
+        64,
+        128,
+        128,
+        256,
+        256
+    ],
+    "kernel_size": [3,3,3,3,5],
+    "strides": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    ],
+    "padding": 1,
+    "activation": "relu",
+    "pool_size": 2,
+    "drop_prob": 0.25
+}
