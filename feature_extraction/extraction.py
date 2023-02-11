@@ -38,7 +38,6 @@ class FeatureExtractor:
 
     def generate_hpcp_shs100k(self, filename):
         # sty: 1: hpcp_hpcp, 2: hpcp_npy, 4: 2dfm_npy
-        essentia.translate(TonalDescriptorsExtractor, 'streaming_extractortonaldescriptors', dot_graph=False)
         pool = essentia.Pool()
         loader = essentia.streaming.MonoLoader(filename=filename)
         tonalExtractor = TonalDescriptorsExtractor()
