@@ -39,7 +39,20 @@ def from_config(config_path: str = "songbase/config.json"):
     except KeyError:
         print("No test datasets supplied.")
 
-    return train_songs, test_songs
+    valid_songs = {}
+    try:
+        for dataset in config["valid_datasets"]:
+            songs = load_songs(
+                type=dataset["type"],
+                songs_dir=dataset["path"],
+                features=config["representation"],
+            )
+            songs = sample_songs(songs, n_samples=dataset["n_samples"])
+            valid_songs.update(songs)
+    except KeyError:
+        print("No validation datasets supplied.")
+
+    return train_songs, test_songs, valid_songs
 
 
 def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):

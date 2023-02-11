@@ -68,23 +68,48 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
             embeddings.append(clf.model(x))
             
         embeddings = torch.cat(embeddings, dim=0)
-        
-        for i in range(100):
-            a, p, n = miner(embeddings, torch.tensor(data_set.labels))
-            
-            pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+
+        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+        song_labels = torch.tensor(data_set.labels)
+
+        for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
+            ids = torch.argwhere(song_labels == lab)
+            ids = ids.flatten()
+            ids = ids[ids != id]
+            pos_dist = d[ids]
+
             inv = 2 - pos_dist
-            pos_preds = (inv > clf.D)*1
+            pos_preds = (inv > clf.D) * 1
             pos_preds = pos_preds.cpu().tolist()
+
             y_pred.extend(pos_preds)
             y_true.extend([1] * len(pos_preds))
-            
-            neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+
+            ids = torch.argwhere(song_labels != lab)
+            ids = ids.flatten()
+            neg_dist = d[ids]
             inv = 2 - neg_dist
-            neg_preds = (inv > clf.D)*1
+            neg_preds = (inv > clf.D) * 1
             neg_preds = neg_preds.cpu().tolist()
             y_pred.extend(neg_preds)
             y_true.extend([0] * len(neg_preds))
+        
+        # for i in range(100):
+        #     a, p, n = miner(embeddings, torch.tensor(data_set.labels))
+        #
+        #     pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+        #     inv = 2 - pos_dist
+        #     pos_preds = (inv > clf.D)*1
+        #     pos_preds = pos_preds.cpu().tolist()
+        #     y_pred.extend(pos_preds)
+        #     y_true.extend([1] * len(pos_preds))
+        #
+        #     neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+        #     inv = 2 - neg_dist
+        #     neg_preds = (inv > clf.D)*1
+        #     neg_preds = neg_preds.cpu().tolist()
+        #     y_pred.extend(neg_preds)
+        #     y_true.extend([0] * len(neg_preds))
         
         return generate_metrics_bare(y_true, y_pred, results_path)
 

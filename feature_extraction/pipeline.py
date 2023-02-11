@@ -110,6 +110,8 @@ def convert_songs_to_features(
         feature = "XMFCC"
     elif feature == "hpcp":
         feature = "XHPCP"
+    elif feature == "hpcp-shs100k":
+        feature = "XHPCP"
     elif feature == "cens":
         feature = "XCENS"
     elif feature == "wav":

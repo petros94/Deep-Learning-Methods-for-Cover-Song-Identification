@@ -20,14 +20,15 @@ def generate_metrics(model, data_set, segmented, results_path):
         distances, clf_labels = generate_posteriors_segments(model, data_set)
     else:
         distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
+        pass
         
     df = generate_ROC(distances, clf_labels, results_path)
     ap = average_precision(distances, clf_labels)
     mrr, mr1, pr10 = ranking_metrics(model, data_set, segmented, 10)
     df_prc = generate_PRC(distances, clf_labels, results_path)
 
-    if not segmented:
-        generate_tsne(embeddings, song_labels, cover_names)
+    # if not segmented:
+    #     generate_tsne(embeddings, song_labels, cover_names)
 
     return df, ap, mrr, mr1, pr10
 
@@ -101,18 +102,35 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
             cover_names.append(cover_name)
 
         embeddings = torch.cat(embeddings, dim=0)
+        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+        song_labels = torch.tensor(song_labels)
 
-        for i in range(128):
-            a, p, n = miner(embeddings, torch.tensor(data_set.labels))
-
-            pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
-            neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
-
+        for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
+            ids = torch.argwhere(song_labels == lab)
+            ids = ids.flatten()
+            ids = ids[ids != id]
+            pos_dist = d[ids]
             distances.append(pos_dist)
             clf_labels.extend([1] * pos_dist.size()[0])
 
+            ids = torch.argwhere(song_labels != lab)
+            ids = ids.flatten()
+            neg_dist = d[ids]
             distances.append(neg_dist)
             clf_labels.extend([0] * neg_dist.size()[0])
+
+
+        # for i in range(128):
+        #     a, p, n = miner(embeddings, torch.tensor(data_set.labels))
+        #
+        #     pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+        #     neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+        #
+        #     distances.append(pos_dist)
+        #     clf_labels.extend([1] * pos_dist.size()[0])
+        #
+        #     distances.append(neg_dist)
+        #     clf_labels.extend([0] * neg_dist.size()[0])
 
         distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
         return distances, clf_labels, embeddings, song_labels, cover_names
@@ -202,6 +220,7 @@ def ranking_metrics(model, data_set, segmented, k):
             rr = []
             ranks = []
             prks = []
+            labs = []
             distance_matrix = torch.cdist(embeddings, embeddings, p=2)
 
             for d, lab in zip(distance_matrix, labels):
@@ -212,6 +231,7 @@ def ranking_metrics(model, data_set, segmented, k):
                 rank = 1
                 for test_label in sorted_labels_by_dist[1:]:
                     if lab == test_label:
+                        labs.append(data_set.idx_2_lab(lab.item()))
                         break
                     rank += 1
                 rr.append(1 / rank)
@@ -221,6 +241,12 @@ def ranking_metrics(model, data_set, segmented, k):
                 most_relevant = sorted_labels_by_dist[1:k + 1]
                 prk = len(most_relevant[most_relevant == lab]) / len(most_relevant)
                 prks.append(prk)
+
+            ids = np.argsort(np.array(ranks))
+            ranks = np.array(ranks)[ids]
+            labs = np.array(labs)[ids]
+            print(list(zip(list(ranks), list(labs))))
+
 
             mrr = np.mean(rr)
             mr1 = np.mean(ranks)

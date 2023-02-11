@@ -4,7 +4,10 @@ import torchaudio
 from essentia import Pool, array
 import essentia.standard as ess
 
-class FeatureExtractor:  
+from hpcp import TonalDescriptorsExtractor, down_post
+
+
+class FeatureExtractor:
     def __init__(self, features='cens') -> None:
         self.features = features
         
@@ -15,7 +18,9 @@ class FeatureExtractor:
         elif features == 'mfcc':
             self.extract = self.generate_mfcc
         elif features == 'wav':
-            self.extract = self.generate_wav
+            self.extract = self.generate_wavs
+        elif features == 'hpcp-shs100k':
+            self.extract = self.generate_hpcp_shs100k
     
     def generate_mfcc(self, filename):
         hopSize=512
@@ -30,6 +35,20 @@ class FeatureExtractor:
         XHPCP = getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
         XHPCP = (XHPCP - np.mean(XHPCP)) / np.std(XHPCP)
         return XHPCP
+
+    def generate_hpcp_shs100k(self, filename):
+        # sty: 1: hpcp_hpcp, 2: hpcp_npy, 4: 2dfm_npy
+        essentia.translate(TonalDescriptorsExtractor, 'streaming_extractortonaldescriptors', dot_graph=False)
+        pool = essentia.Pool()
+        loader = essentia.streaming.MonoLoader(filename=filename)
+        tonalExtractor = TonalDescriptorsExtractor()
+        loader.audio >> tonalExtractor.signal
+        for desc, output in tonalExtractor.outputs.items():
+            output >> (pool, desc)
+        essentia.run(loader)
+
+        down_post(pool, 20)
+        return pool['down_sample_hpcp']
     
     def generate_cens(self, filename):
         (XAudio, Fs) = getAudioLibrosa(filename)

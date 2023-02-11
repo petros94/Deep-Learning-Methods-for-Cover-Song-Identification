@@ -57,6 +57,13 @@ class TripletDataset(torch.utils.data.Dataset):
             for song_id in P:
                 int_label = self.int_mapping[song_id]
                 K = random.choice(self.song_segs[song_id])
+
+                num_covers = K.size(0)
+                if num_covers > 4:
+                    perm = torch.randperm(num_covers)
+                    idx = perm[:4]
+                    K = K[idx]
+
                 samples.append(K)
                 labels.extend([int_label]*K.size(0))
                 self.total_samples += K.size(0)

@@ -34,9 +34,11 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
     os.mkdir(res_dir_name)
 
     print("Loading songs")
-    train_songs, test_songs = from_config(config_path=config_path)
+    train_songs, test_songs, valid_songs = from_config(config_path=config_path)
 
-    train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
+    if len(valid_songs) == 0:
+        print("Spliting train/valid set")
+        train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
     train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
