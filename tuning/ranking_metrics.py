@@ -23,13 +23,13 @@ def generate_metrics(model, data_set, segmented, results_path):
         
     df = generate_ROC(distances, clf_labels, results_path)
     ap = average_precision(distances, clf_labels)
-    mrr = mean_reprocical_rank(model, data_set, segmented)
+    mrr, mr1, pr10 = ranking_metrics(model, data_set, segmented, 10)
     df_prc = generate_PRC(distances, clf_labels, results_path)
 
     if not segmented:
         generate_tsne(embeddings, song_labels, cover_names)
 
-    return df, ap, mrr
+    return df, ap, mrr, mr1, pr10
 
 
 def generate_embeddings_metrics(model, data_set, results_path):
@@ -48,7 +48,7 @@ def generate_embeddings_metrics(model, data_set, results_path):
     ap = average_precision(distances, clf_labels)
     df_prc = generate_PRC(distances, clf_labels, results_path)
     generate_tsne(embeddings, song_labels, cover_names)
-    return df, ap, pd.DataFrame()
+    return df, ap, pd.DataFrame(), None, None
 
 
 def generate_posteriors_segments(
@@ -150,12 +150,16 @@ def average_precision(distances: np.ndarray, clf_labels: np.ndarray):
     return average_precision_score(clf_labels, 2 - distances)
 
 
-def mean_reprocical_rank(model, data_set, segmented):
+def ranking_metrics(model, data_set, segmented, k):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
     with torch.no_grad():
         if segmented:
+            # Size N x N
+            rr = []
+            ranks = []
+            prks = []
             for i in range(len(data_set)):
                 # N X 1 X num_feats X num_samples, N
                 (data, labels) = data_set[i]
@@ -163,22 +167,29 @@ def mean_reprocical_rank(model, data_set, segmented):
                 labels = labels.to(device)
 
                 embeddings = model(data)
-
-                # Size N x N
-                rr = []
                 distance_matrix = torch.cdist(embeddings, embeddings, p=2)
                 for d, lab in zip(distance_matrix, labels):
                     sorted_ids_by_dist = d.argsort()
                     sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
+                    # MRR
                     rank = 1
                     for test_label in sorted_labels_by_dist[1:]:
                         if lab == test_label:
                             break
                         rank += 1
                     rr.append(1 / rank)
+                    ranks.append(rank)
+
+                    # Precision at k
+                    most_relevant = sorted_labels_by_dist[1:k + 1]
+                    prk = len(most_relevant[most_relevant == lab]) / len(most_relevant)
+                    prks.append(prk)
+
             mrr = np.mean(rr)
-            return mrr
+            mr1 = np.mean(ranks)
+            prk = np.mean(prks)
+            return mrr, mr1, prk
         else:
             embeddings = []
             labels = torch.tensor(data_set.labels).to(device)
@@ -189,20 +200,32 @@ def mean_reprocical_rank(model, data_set, segmented):
             embeddings = torch.cat(embeddings, dim=0)
             # Size N x N
             rr = []
+            ranks = []
+            prks = []
             distance_matrix = torch.cdist(embeddings, embeddings, p=2)
 
             for d, lab in zip(distance_matrix, labels):
                 sorted_ids_by_dist = d.argsort()
                 sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
+                # MRR
                 rank = 1
                 for test_label in sorted_labels_by_dist[1:]:
                     if lab == test_label:
                         break
                     rank += 1
                 rr.append(1 / rank)
+                ranks.append(rank)
+
+                # Precision @ k
+                most_relevant = sorted_labels_by_dist[1:k + 1]
+                prk = len(most_relevant[most_relevant == lab]) / len(most_relevant)
+                prks.append(prk)
+
             mrr = np.mean(rr)
-            return mrr
+            mr1 = np.mean(ranks)
+            prk = np.mean(prks)
+            return mrr, mr1, prk
 
 
 def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):

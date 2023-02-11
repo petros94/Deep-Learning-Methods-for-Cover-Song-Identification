@@ -114,12 +114,14 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
     
     print("Plot ROC and calculate metrics")
     if config["model"]["type"] == "embeddings":
-        roc_stats, mean_average_precision, mrr = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
+        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
     else:
-        roc_stats, mean_average_precision, mrr = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
+        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
 
-    print(f"MAP: {round(mean_average_precision,3)}")
-    print(f"MRR: {round(mrr, 3)}")
+    print(f"MAP: {mean_average_precision}")
+    print(f"MRR: {mrr}")
+    print(f"MR1: {mr1}")
+    print(f"Pr@10: {pr10}")
 
     try:
         thr = config["model"]["threshold"]
