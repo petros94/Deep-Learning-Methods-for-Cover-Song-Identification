@@ -53,7 +53,7 @@ class TripletDataset(torch.utils.data.Dataset):
             samples = []
             labels = []
             P = sample_songs(self.songs, self.songs_per_batch).keys()
-            
+
             for song_id in P:
                 int_label = self.int_mapping[song_id]
                 K = random.choice(self.song_segs[song_id])

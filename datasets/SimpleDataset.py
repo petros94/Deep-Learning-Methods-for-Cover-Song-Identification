@@ -5,6 +5,7 @@ class SimpleDataset:
     def __init__(self, songs, scale=(1, 0.33)):
         print("Creating SimpleDataset")
         self.label_mapping = {k: i for i,k in enumerate(list(songs.keys()))}
+        self.inv_mapping = {i: k for i,k in enumerate(list(songs.keys()))}
     
         self.frames = []
         self.labels = []
@@ -21,3 +22,6 @@ class SimpleDataset:
 
     def __getitem__(self, item):
         return self.frames[item], self.labels[item], self.song_names[item]
+
+    def idx_2_lab(self, idx):
+        return self.inv_mapping[idx]

@@ -65,8 +65,30 @@ def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
         return load_songs_covers1000(songs_dir, features)
     elif type == "covers80":
         return load_songs_covers80(songs_dir, features)
+    elif type == "shs100k":
+        return load_songs_shs100k(songs_dir, features)
     else:
         raise ValueError("'type' must be one of ['covers1000', 'covers80']")
+
+
+def load_songs_shs100k(songs_dir, features=['hpcp']):
+    songs = {}
+    for song_dir, feature in zip(songs_dir, features):
+        songs[feature] = {}
+        origin_path = song_dir
+        entries = os.listdir(origin_path)
+
+        for item in entries:
+            song_id, cover_id = item.split(".npy")[0].split("_")
+            repr = np.transpose(np.load(os.path.join(origin_path, item)))
+
+            if song_id not in songs[feature].keys():
+                songs[feature][song_id] = []
+
+            songs[feature][song_id].append(
+                {"song_id": song_id, "cover_id": cover_id, "repr": repr}
+            )
+    return merge_song_representations(songs)
 
 
 def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
@@ -119,14 +141,14 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
 
         for dir in entries:
             subdir = os.listdir(origin_path + dir)
-            
+
             if len(subdir) <= 1:
                 skipped_counter += 1
                 print(
                     f"Warning found song with no covers: {origin_path + dir}, skipping..."
                 )
                 continue
-            
+
             songs[feature][dir] = []
 
             for song in subdir:
@@ -141,6 +163,7 @@ def load_songs_covers80(songs_dir=["hpcps80/"], features=["hpcp"]):
 
     print(f"Total: {len(songs[features[0]])}, skipped: {skipped_counter}")
     return merge_song_representations(songs)
+
 
 def merge_song_representations(songs):
     """Merge song representations.
