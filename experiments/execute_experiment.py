@@ -153,7 +153,7 @@ def generate_report(config, metrics_df, mean_average_precision, mrr, results_pat
         report_html = report_html.replace("__MODELDATA__", json.dumps(model_config))
         report_html = report_html.replace("__TABLE__", metrics_df.to_html())
         report_html = report_html.replace(
-            "__MAP__", str(round(mean_average_precision, 3))
+            "__MAP__", str(round(mean_average_precision.item(), 3))
         )
         report_html = report_html.replace("__MRR__", str(round(mrr, 3)))
 

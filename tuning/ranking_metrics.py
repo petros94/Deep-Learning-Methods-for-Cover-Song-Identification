@@ -135,8 +135,8 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
 
 def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
     permute_ids = np.random.permutation(len(distances))
-    sample_distances = distances[permute_ids][:1000]
-    sample_clf_labels = clf_labels[permute_ids][:1000]
+    sample_distances = distances[permute_ids][:100000]
+    sample_clf_labels = clf_labels[permute_ids][:100000]
 
     fpr, tpr, thresholds = roc_curve(sample_clf_labels, 2 - sample_distances)
     df = pd.DataFrame({"tpr": tpr, "fpr": fpr, "thr": thresholds})
@@ -234,8 +234,8 @@ def ranking_metrics(model, data_set, k):
 
 def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):
     permute_ids = np.random.permutation(len(distances))
-    sample_distances = distances[permute_ids][:1000]
-    sample_clf_labels = clf_labels[permute_ids][:1000]
+    sample_distances = distances[permute_ids][:100000]
+    sample_clf_labels = clf_labels[permute_ids][:100000]
 
     # Use the precision_recall_curve function to get the precision, recall, and thresholds arrays
     precision, recall, thresholds = precision_recall_curve(sample_clf_labels, 2 - sample_distances)

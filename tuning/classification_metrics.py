@@ -115,10 +115,14 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
 
 
 def generate_metrics_bare(y_true, y_pred, results_path):
-    pr, rec, f1, sup = precision_recall_fscore_support(y_true, y_pred)
-    acc = accuracy_score(y_true, y_pred)
+    permute_ids = np.random.permutation(len(y_true))
+    sample_y_true = y_true[permute_ids][:100000]
+    sample_y_pred = y_pred[permute_ids][:100000]
+
+    pr, rec, f1, sup = precision_recall_fscore_support(sample_y_true, sample_y_pred)
+    acc = accuracy_score(sample_y_true, sample_y_pred)
     df = pd.DataFrame({"pre": pr, "rec": rec, "f1": f1, "sup": sup})
-    ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
+    ConfusionMatrixDisplay.from_predictions(sample_y_true, sample_y_pred)
 
     if results_path:
         df.to_csv(results_path + "/metrics.csv")
