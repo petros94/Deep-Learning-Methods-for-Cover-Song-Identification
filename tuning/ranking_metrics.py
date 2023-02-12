@@ -16,21 +16,15 @@ from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
 def generate_metrics(model, data_set, segmented, results_path):
-    if segmented:
-        distances, clf_labels = generate_posteriors_segments(model, data_set)
-    else:
-        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
-        pass
-        
+    distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
     df = generate_ROC(distances, clf_labels, results_path)
-    ap = average_precision(distances, clf_labels)
-    mrr, mr1, pr10 = ranking_metrics(model, data_set, segmented, 10)
     df_prc = generate_PRC(distances, clf_labels, results_path)
-
-    # if not segmented:
-    #     generate_tsne(embeddings, song_labels, cover_names)
-
-    return df, ap, mrr, mr1, pr10
+    if segmented:
+        return df, None, None, None, None
+    else:
+        map, mrr, mr1, pr10 = ranking_metrics(model, data_set, 10)
+        generate_tsne(embeddings, song_labels, cover_names)
+        return df, map, mrr, mr1, pr10
 
 
 def generate_embeddings_metrics(model, data_set, results_path):
@@ -164,94 +158,85 @@ def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
     return df
 
 
-def average_precision(distances: np.ndarray, clf_labels: np.ndarray):
-    return average_precision_score(clf_labels, 2 - distances)
+def calc_MRR(distance_matrix, labels):
+    # Size N x N
+    rr = []
+
+    for d, lab in zip(distance_matrix, labels):
+        sorted_ids_by_dist = d.argsort()
+        sorted_labels_by_dist = labels[sorted_ids_by_dist]
+
+        # MRR
+        rank = 1
+        for test_label in sorted_labels_by_dist[1:]:
+            if lab == test_label:
+                break
+            rank += 1
+        rr.append(1 / rank)
+
+    mrr = np.mean(rr)
+    return mrr
+
+def calc_MAP(array2d, version, que_range=None, K=1e10):
+    if que_range is not None:
+        que_s, que_t = que_range[0], que_range[1]
+        if que_s == 0:
+            ref_s, ref_t = que_t, len(array2d)
+        else:
+            ref_s, ref_t = 0, que_s
+    else:
+        que_s, que_t, ref_s, ref_t = 0, len(array2d), 0, len(array2d)
+
+    new_array2d = []
+    for u, row in enumerate(array2d[que_s: que_t]):
+        row = [(v + ref_s, col) for (v, col) in enumerate(row[ref_s: ref_t]) if u + que_s != v + ref_s]
+        new_array2d.append(row)
+    MAP, top10, rank1 = 0, 0, 0
+
+    for u, row in enumerate(new_array2d):
+        row.sort(key=lambda x: x[1])
+        per_top10, per_rank1, per_MAP = 0, 0, 0
+        version_cnt = 0.
+        u = u + que_s
+        for k, (v, val) in enumerate(row):
+
+            if version[u] == version[v]:
+
+                if k < K:
+                    version_cnt += 1
+                    per_MAP += version_cnt / (k + 1)
+                if per_rank1 == 0:
+                    per_rank1 = k + 1
+                if k < 10:
+                    per_top10 += 1
+        per_MAP /= 1 if version_cnt < 0.0001 else version_cnt
+        # if per_MAP < 0.1:
+        #     print row
+        MAP += per_MAP
+        top10 += per_top10
+        rank1 += per_rank1
+    return MAP / float(que_t - que_s), top10 / float(que_t - que_s) / 10, rank1 / float(que_t - que_s)
 
 
-def ranking_metrics(model, data_set, segmented, k):
+def ranking_metrics(model, data_set, k):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
     with torch.no_grad():
-        if segmented:
-            # Size N x N
-            rr = []
-            ranks = []
-            prks = []
-            for i in range(len(data_set)):
-                # N X 1 X num_feats X num_samples, N
-                (data, labels) = data_set[i]
-                data = data.type(torch.FloatTensor).to(device)
-                labels = labels.to(device)
+        embeddings = []
+        labels = torch.tensor(data_set.labels).to(device)
+        for frames, label in zip(data_set.frames, data_set.labels):
+            x = frames.to(device)
+            embeddings.append(model(x))
 
-                embeddings = model(data)
-                distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-                for d, lab in zip(distance_matrix, labels):
-                    sorted_ids_by_dist = d.argsort()
-                    sorted_labels_by_dist = labels[sorted_ids_by_dist]
+        embeddings = torch.cat(embeddings, dim=0)
+        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
 
-                    # MRR
-                    rank = 1
-                    for test_label in sorted_labels_by_dist[1:]:
-                        if lab == test_label:
-                            break
-                        rank += 1
-                    rr.append(1 / rank)
-                    ranks.append(rank)
-
-                    # Precision at k
-                    most_relevant = sorted_labels_by_dist[1:k + 1]
-                    prk = len(most_relevant[most_relevant == lab]) / len(most_relevant)
-                    prks.append(prk)
-
-            mrr = np.mean(rr)
-            mr1 = np.mean(ranks)
-            prk = np.mean(prks)
-            return mrr, mr1, prk
-        else:
-            embeddings = []
-            labels = torch.tensor(data_set.labels).to(device)
-            for frames, label in zip(data_set.frames, data_set.labels):
-                x = frames.to(device)
-                embeddings.append(model(x))
-
-            embeddings = torch.cat(embeddings, dim=0)
-            # Size N x N
-            rr = []
-            ranks = []
-            prks = []
-            labs = []
-            distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-
-            for d, lab in zip(distance_matrix, labels):
-                sorted_ids_by_dist = d.argsort()
-                sorted_labels_by_dist = labels[sorted_ids_by_dist]
-
-                # MRR
-                rank = 1
-                for test_label in sorted_labels_by_dist[1:]:
-                    if lab == test_label:
-                        labs.append(data_set.idx_2_lab(lab.item()))
-                        break
-                    rank += 1
-                rr.append(1 / rank)
-                ranks.append(rank)
-
-                # Precision @ k
-                most_relevant = sorted_labels_by_dist[1:k + 1]
-                prk = len(most_relevant[most_relevant == lab]) / len(most_relevant)
-                prks.append(prk)
-
-            ids = np.argsort(np.array(ranks))
-            ranks = np.array(ranks)[ids]
-            labs = np.array(labs)[ids]
-            print(list(zip(list(ranks), list(labs))))
+        map, prk, mr1 = calc_MAP(distance_matrix, labels)
+        mrr = calc_MRR(distance_matrix, labels)
 
 
-            mrr = np.mean(rr)
-            mr1 = np.mean(ranks)
-            prk = np.mean(prks)
-            return mrr, mr1, prk
+        return map, mrr, mr1, prk
 
 
 def generate_PRC(distances: np.ndarray, clf_labels: np.ndarray, results_path: str):

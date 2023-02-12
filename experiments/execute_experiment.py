@@ -12,7 +12,8 @@ from songbase.load_songs import from_config
 from training.train import train
 from utils.generic import split_songs
 from utils.visualization import visualize_losses
-from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics, generate_embeddings_metrics
+from tuning.ranking_metrics import generate_metrics as generate_ranking_metrics, generate_embeddings_metrics, \
+    generate_ROC
 from tuning.classification_metrics import generate_metrics as generate_classification_metrics
 
 
@@ -81,7 +82,7 @@ def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json", 
     os.mkdir(res_dir_name)
 
     print("Loading songs")
-    _, test_songs = from_config(config_path=config_path)
+    _, test_songs, _ = from_config(config_path=config_path)
 
     if segmented is None:
         evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=True)
@@ -118,7 +119,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
     if config["model"]["type"] == "embeddings":
         roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
     else:
-        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, segmented=segmented, results_path=res_dir_name)
+        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, segmented, results_path=res_dir_name)
 
     print(f"MAP: {mean_average_precision}")
     print(f"MRR: {mrr}")

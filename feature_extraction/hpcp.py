@@ -15,16 +15,16 @@
 # You should have received a copy of the Affero GNU General Public License
 # version 3 along with this program. If not, see http://www.gnu.org/licenses/
 
-#! /usr/bin/env python
+# ! /usr/bin/env python
 
 import sys, os
 import essentia, essentia.standard, essentia.streaming
 from essentia.streaming import *
 import numpy as np
 
-
 tonalFrameSize = 4096
 tonalHopSize = 1024
+
 
 class TonalDescriptorsExtractor(essentia.streaming.CompositeBase):
 
@@ -43,14 +43,14 @@ class TonalDescriptorsExtractor(essentia.streaming.CompositeBase):
                               maxFrequency=5000,
                               orderBy='magnitude');
         hpcp_key = HPCP(harmonics=7,
-                        size = 12,
-                        referenceFrequency = tuningFrequency,
-                        bandPreset = False,
-                        minFrequency = 40.0,
-                        maxFrequency = 5000.0,
-                        weightType = 'squaredCosine',
-                        nonLinear = False,
-                        windowSize = 4.0/3.0);
+                        size=12,
+                        referenceFrequency=tuningFrequency,
+                        bandPreset=False,
+                        minFrequency=40.0,
+                        maxFrequency=5000.0,
+                        weightType='squaredCosine',
+                        nonLinear=False,
+                        windowSize=4.0 / 3.0);
 
         fc.frame >> w.frame >> spec.frame
         spec.spectrum >> peaks.spectrum
@@ -63,53 +63,57 @@ class TonalDescriptorsExtractor(essentia.streaming.CompositeBase):
         # define outputs:
         self.outputs['hpcp'] = hpcp_key.hpcp
 
+
 usage = 'tonaldescriptors.py [options] <inputfilename> <outputfilename>'
+
 
 def down_post(pool, v):
     hpcp = pool['hpcp']
     glo_hpcp = np.sum(hpcp, axis=0)
     glo_hpcp /= np.max(glo_hpcp) if np.max(glo_hpcp) > 0 else 1
-    for i in xrange(0, len(hpcp) / v):
-        down_item = np.sum(hpcp[i * v : (i + 1) * v, :], axis=0)
+    for i in range(0, int(len(hpcp) / v)):
+        down_item = np.sum(hpcp[i * v: (i + 1) * v, :], axis=0)
         down_item /= np.max(down_item) if np.max(down_item) > 0 else 1
         pool.add('down_sample_hpcp', down_item)
     pool.remove('hpcp')
     pool.set('glo_hpcp', glo_hpcp)
 
-def parse_args():
 
+def parse_args():
     import numpy
-    essentia_version = '%s\n'\
-    'python version: %s\n'\
-    'numpy version: %s' % (essentia.__version__,       # full version
-                           sys.version.split()[0],     # python major version
-                           numpy.__version__)          # numpy version
+    essentia_version = '%s\n' \
+                       'python version: %s\n' \
+                       'numpy version: %s' % (essentia.__version__,  # full version
+                                              sys.version.split()[0],  # python major version
+                                              numpy.__version__)  # numpy version
 
     from optparse import OptionParser
     parser = OptionParser(usage=usage, version=essentia_version)
 
-    parser.add_option("-c","--cpp", action="store_true", dest="generate_cpp",
-      help="generate cpp code from CompositeBase algorithm")
+    parser.add_option("-c", "--cpp", action="store_true", dest="generate_cpp",
+                      help="generate cpp code from CompositeBase algorithm")
 
     parser.add_option("-d", "--dot", action="store_true", dest="generate_dot",
-      help="generate dot and cpp code from CompositeBase algorithm")
+                      help="generate dot and cpp code from CompositeBase algorithm")
 
     (options, args) = parser.parse_args()
 
     return options, args
 
 
-
 if __name__ == '__main__':
 
     # sty: 1: hpcp_hpcp, 2: hpcp_npy, 4: 2dfm_npy
     opts, args = parse_args()
-    in_path, out_path = args  
+    in_path, out_path = args
     file_name = in_path.split('/')[-1].split('.')[0]
-    
+    print(in_path, out_path)
+
     if opts.generate_dot:
+        print("here")
         essentia.translate(TonalDescriptorsExtractor, 'streaming_extractortonaldescriptors', dot_graph=True)
     elif opts.generate_cpp:
+        print("there")
         essentia.translate(TonalDescriptorsExtractor, 'streaming_extractortonaldescriptors', dot_graph=False)
 
     pool = essentia.Pool()
@@ -119,7 +123,7 @@ if __name__ == '__main__':
     for desc, output in tonalExtractor.outputs.items():
         output >> (pool, desc)
     essentia.run(loader)
-    
+
     down_post(pool, 20)
-    np.save(out_path, pool['down_sample_hpcp'])
-    
+    print(pool['down_sample_hpcp'].shape)
+

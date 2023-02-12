@@ -1,16 +1,17 @@
 import numpy as np
 import librosa
 import torchaudio
+import essentia, essentia.standard, essentia.streaming
 from essentia import Pool, array
 import essentia.standard as ess
 
-from hpcp import TonalDescriptorsExtractor, down_post
+from feature_extraction.hpcp import TonalDescriptorsExtractor, down_post
 
 
 class FeatureExtractor:
     def __init__(self, features='cens') -> None:
         self.features = features
-        
+
         if features == 'cens':
             self.extract = self.generate_cens
         elif features == 'hpcp':
@@ -21,18 +22,18 @@ class FeatureExtractor:
             self.extract = self.generate_wavs
         elif features == 'hpcp-shs100k':
             self.extract = self.generate_hpcp_shs100k
-    
+
     def generate_mfcc(self, filename):
-        hopSize=512
+        hopSize = 512
         (XAudio, Fs) = getAudioLibrosa(filename)
-        XMFCC = getMFCCsLibrosa(XAudio, Fs, 4*hopSize, hopSize, lifterexp = 0.6, NMFCC = 20)
+        XMFCC = getMFCCsLibrosa(XAudio, Fs, 4 * hopSize, hopSize, lifterexp=0.6, NMFCC=20)
         XMFCC = (XMFCC - np.mean(XMFCC)) / np.std(XMFCC)
         return XMFCC
 
     def generate_hpcp(self, filename):
-        hopSize=512
+        hopSize = 512
         (XAudio, Fs) = getAudioLibrosa(filename)
-        XHPCP = getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins = 12)
+        XHPCP = getHPCPEssentia(XAudio, Fs, 2048, hopSize, NChromaBins=12)
         XHPCP = (XHPCP - np.mean(XHPCP)) / np.std(XHPCP)
         return XHPCP
 
@@ -48,7 +49,7 @@ class FeatureExtractor:
 
         down_post(pool, 20)
         return pool['down_sample_hpcp']
-    
+
     def generate_cens(self, filename):
         (XAudio, Fs) = getAudioLibrosa(filename)
         XCENS = getCENSLibrosa(XAudio)
@@ -58,8 +59,8 @@ class FeatureExtractor:
     def generate_wav(self, filename):
         XWAV = speech_file_to_array_fn(filename)
         return XWAV
-       
-     
+
+
 def getAudioLibrosa(filename):
     """
     Use librosa to load audio
@@ -70,8 +71,9 @@ def getAudioLibrosa(filename):
     XAudio = librosa.core.to_mono(XAudio)
     return (XAudio, Fs)
 
+
 # compute frame-wise hpcp with default params
-def getHPCPEssentia(XAudio, Fs, winSize, hopSize, squareRoot=False, NChromaBins=36, NHarmonics = 0):
+def getHPCPEssentia(XAudio, Fs, winSize, hopSize, squareRoot=False, NChromaBins=36, NHarmonics=0):
     """
     Wrap around the essentia library to compute HPCP features
     :param XAudio: A flat array of raw audio samples
@@ -96,7 +98,8 @@ def getHPCPEssentia(XAudio, Fs, winSize, hopSize, squareRoot=False, NChromaBins=
     H = H.T
     return H
 
-def getMFCCsLibrosa(XAudio, Fs, winSize, hopSize = 512, NBands = 40, fmax = 8000, NMFCC = 20, lifterexp = 0):
+
+def getMFCCsLibrosa(XAudio, Fs, winSize, hopSize=512, NBands=40, fmax=8000, NMFCC=20, lifterexp=0):
     """
     Get MFCC features using librosa functions
     :param XAudio: A flat array of audio samples
@@ -110,17 +113,19 @@ def getMFCCsLibrosa(XAudio, Fs, winSize, hopSize = 512, NBands = 40, fmax = 8000
     :return X: An (NMFCC x NWindows) array of MFCC samples
     """
     X = librosa.feature.mfcc(XAudio, Fs, n_mfcc=NMFCC, hop_length=hopSize, n_mels=NBands, fmax=fmax)
-    #Do liftering
-    coeffs = np.arange(NMFCC)**lifterexp
+    # Do liftering
+    coeffs = np.arange(NMFCC) ** lifterexp
     coeffs[0] = 1
-    X = coeffs[:, None]*X
-    X = np.array(X, dtype = np.float32)
+    X = coeffs[:, None] * X
+    X = np.array(X, dtype=np.float32)
     return X
+
 
 def getCENSLibrosa(XAudio):
     X = librosa.feature.chroma_cens(XAudio, hop_length=512)
-    X = np.array(X, dtype = np.float32)
+    X = np.array(X, dtype=np.float32)
     return X
+
 
 def speech_file_to_array_fn(path):
     speech_array, _sampling_rate = torchaudio.load(path)
