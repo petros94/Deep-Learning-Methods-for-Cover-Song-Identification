@@ -5,27 +5,27 @@
     "train_datasets": [],
     "test_datasets": [
         {
-            "type": "covers1000",
+            "type": "coversshs",
             "path": [
-                "tmp/content/hpcps/"
+                "/content/full_dataset_hpcp_shs100k/content/Diplomatiki Petrou - full dataset 4_12_hpcp_shs100k/"
             ],
-            "n_samples": 10
+            "n_samples": 10000
         }
     ],
     "model": {
         "type": "cnn",
-        "config_path": "checkpoints/example_model_29_12_22/config.json",
-        "checkpoint_path": "checkpoints/example_model_29_12_22/checkpoint.tar"
+        "config_path": "/content/Deep-Learning-Methods-for-Cover-Song-Identification/checkpoints/2023-02-12 17:52:45.798781_cnn_hpcp_angular/config.json",
+        "checkpoint_path": "/content/Deep-Learning-Methods-for-Cover-Song-Identification/checkpoints/2023-02-12 17:52:45.798781_cnn_hpcp_angular/checkpoint.tar"
     },
     "loss": "angular",
     "features": {
         "n_batches": 256,
-        "songs_per_batch": 256,
+        "songs_per_batch": 128,
         "input": "hpcp",
-        "frame_size": 3600,
+        "frame_size": 300,
         "scale": [
             1,
-            0.2
+            1
         ]
     },
     "train": {

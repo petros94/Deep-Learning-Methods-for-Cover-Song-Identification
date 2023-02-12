@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import torch.nn as nn
+from prettytable import PrettyTable
 
 class CNN(nn.Module):
     def __init__(self, config):
@@ -26,6 +27,20 @@ class CNN(nn.Module):
 
         self.features = self.create_network()
         self.linear = nn.Linear(in_features=self.channels[-1], out_features=self.channels[-1])
+
+        def count_parameters(model):
+            table = PrettyTable(["Modules", "Parameters"])
+            total_params = 0
+            for name, parameter in model.named_parameters():
+                if not parameter.requires_grad: continue
+                params = parameter.numel()
+                table.add_row([name, params])
+                total_params += params
+            print(table)
+            print(f"Total Trainable Params: {total_params}")
+            return total_params
+
+        count_parameters(self)
 
     def create_network(self):
         modules_conv = []
