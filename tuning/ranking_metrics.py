@@ -27,7 +27,7 @@ def generate_metrics(model, data_set, segmented, results_path):
         df_prc = generate_PRC(distances, clf_labels, results_path)
         map, mrr, mr1, pr10 = ranking_metrics(model, data_set, 10)
         generate_tsne(embeddings, song_labels, cover_names)
-        return df, map, mrr, mr1, pr10
+        return df, map.item(), mrr, mr1, pr10
 
 
 def generate_embeddings_metrics(model, data_set, results_path):
