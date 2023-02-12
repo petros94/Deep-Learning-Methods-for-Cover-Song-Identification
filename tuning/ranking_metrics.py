@@ -16,12 +16,15 @@ from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
 def generate_metrics(model, data_set, segmented, results_path):
-    distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
-    df = generate_ROC(distances, clf_labels, results_path)
-    df_prc = generate_PRC(distances, clf_labels, results_path)
     if segmented:
+        distances, clf_labels = generate_posteriors_segments(model, data_set)
+        df = generate_ROC(distances, clf_labels, results_path)
+        df_prc = generate_PRC(distances, clf_labels, results_path)
         return df, None, None, None, None
     else:
+        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
+        df = generate_ROC(distances, clf_labels, results_path)
+        df_prc = generate_PRC(distances, clf_labels, results_path)
         map, mrr, mr1, pr10 = ranking_metrics(model, data_set, 10)
         generate_tsne(embeddings, song_labels, cover_names)
         return df, map, mrr, mr1, pr10
