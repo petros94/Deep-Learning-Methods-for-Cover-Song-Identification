@@ -116,8 +116,8 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
 
 def generate_metrics_bare(y_true, y_pred, results_path):
     permute_ids = np.random.permutation(len(y_true))
-    sample_y_true = y_true[permute_ids][:100000]
-    sample_y_pred = y_pred[permute_ids][:100000]
+    sample_y_true = np.array(y_true)[permute_ids][:100000]
+    sample_y_pred = np.array(y_pred)[permute_ids][:100000]
 
     pr, rec, f1, sup = precision_recall_fscore_support(sample_y_true, sample_y_pred)
     acc = accuracy_score(sample_y_true, sample_y_pred)
