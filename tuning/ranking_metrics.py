@@ -174,11 +174,7 @@ def calc_MRR(distance_matrix, labels):
         sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
         # MRR
-        rank = 1
-        for test_label in sorted_labels_by_dist[1:]:
-            if lab == test_label:
-                break
-            rank += 1
+        rank = np.argmax(sorted_labels_by_dist[1:] == lab) + 1
         rr.append(1 / rank)
 
     mrr = np.mean(rr)
