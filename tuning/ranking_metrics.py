@@ -165,7 +165,7 @@ def generate_ROC(distances: np.ndarray, clf_labels: np.ndarray, results_path: st
     return df
 
 
-def calc_MRR(distance_matrix, labels):
+def calc_MRR(distance_matrix: torch.Tensor, labels: torch.Tensor):
     # Size N x N
     rr = []
 
@@ -174,7 +174,7 @@ def calc_MRR(distance_matrix, labels):
         sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
         # MRR
-        rank = np.argmax(sorted_labels_by_dist[1:] == lab) + 1
+        rank = (sorted_labels_by_dist[1:] == lab).nonzero()[0].item()
         rr.append(1 / rank)
 
     mrr = np.mean(rr)
