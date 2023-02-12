@@ -174,7 +174,7 @@ def calc_MRR(distance_matrix: torch.Tensor, labels: torch.Tensor):
         sorted_labels_by_dist = labels[sorted_ids_by_dist]
 
         # MRR
-        rank = (sorted_labels_by_dist[1:] == lab).nonzero()[0].item()
+        rank = (sorted_labels_by_dist[1:] == lab).nonzero()[0].item() + 1
         rr.append(1 / rank)
 
     mrr = np.mean(rr)

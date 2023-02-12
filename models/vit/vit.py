@@ -26,14 +26,14 @@ class ViT(nn.Module):
             patch_padding=patch_padding,
         )
         self.model = CvtModel(self.configuration)
+        self.linear = nn.Linear(in_features=1000, out_features=512)
 
     def forward(self, x):
         print(x.size())
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
         outputs = outputs.cls_token_value.squeeze(1)
-        return nn.functional.normalize(outputs)
-
+        return self.linear(outputs)
 
 def from_config(config_path: str):
     """Create a ViT model from configuration
