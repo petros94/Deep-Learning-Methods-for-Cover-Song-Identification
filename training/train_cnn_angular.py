@@ -1,4 +1,6 @@
 import json
+
+import numpy as np
 import torch
 import random
 
@@ -70,7 +72,7 @@ def train_angular_loss(model: torch.nn.Module,
         model.eval()
         valid_loss=0
         with torch.no_grad():
-            for i in range(len(valid_set)):
+            for i in range(min(256, len(valid_set))):
                 # N X 1 X num_feats X num_samples, N
                 (data, labels) = valid_set[i]
                 data = data.to(device)

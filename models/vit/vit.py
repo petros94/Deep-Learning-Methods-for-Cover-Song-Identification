@@ -26,10 +26,9 @@ class ViT(nn.Module):
             patch_padding=patch_padding,
         )
         self.model = CvtModel(self.configuration)
-        self.linear = nn.Linear(in_features=1000, out_features=512)
+        self.linear = nn.Linear(in_features=384, out_features=1024)
 
     def forward(self, x):
-        print(x.size())
         inputs = {"pixel_values": x}
         outputs = self.model(**inputs)
         outputs = outputs.cls_token_value.squeeze(1)

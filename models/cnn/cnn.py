@@ -22,6 +22,7 @@ class CNN(nn.Module):
         self.padding = self.config["padding"]
         self.pool_size = self.config["pool_size"]
         self.drop_prob_conv = self.config["drop_prob"]
+        self.pooling = self.config["pooling"]
 
         self.features = self.create_network()
         self.linear = nn.Linear(in_features=self.channels[-1], out_features=self.channels[-1])
@@ -38,7 +39,9 @@ class CNN(nn.Module):
                           padding=self.padding))
             modules_conv.append(nn.BatchNorm2d(self.channels[i_conv]))
             modules_conv.append(nn.ReLU())
-            modules_conv.append(nn.MaxPool2d((self.pool_size[0],self.pool_size[1])))
+
+            if self.pooling[i_conv]:
+                modules_conv.append(nn.MaxPool2d((self.pool_size[0],self.pool_size[1])))
             modules_conv.append(nn.Dropout(p=self.drop_prob_conv))
             in_channels = self.channels[i_conv]
         

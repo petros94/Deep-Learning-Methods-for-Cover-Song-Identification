@@ -6,7 +6,6 @@
         64,
         128,
         128,
-        256,
         256
     ],
     "kernel_size": [
@@ -48,6 +47,13 @@
     "pool_size": [
         1,
         2
+    ],
+    "pooling": [
+        false,
+        true,
+        false,
+        true,
+        false
     ],
     "drop_prob": 0.25
 }

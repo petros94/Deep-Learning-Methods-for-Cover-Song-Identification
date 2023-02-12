@@ -80,6 +80,8 @@ def load_songs(type="covers1000", songs_dir=["mfccs/"], features=["mfcc"]):
         return load_songs_covers80(songs_dir, features)
     elif type == "shs100k":
         return load_songs_shs100k(songs_dir, features)
+    elif type == "coversshs":
+        return load_songs_coversshs(songs_dir, features)
     else:
         raise ValueError("'type' must be one of ['covers1000', 'covers80']")
 
@@ -132,6 +134,48 @@ def load_songs_covers1000(songs_dir=["mfccs/"], features=["mfcc"]):
                     {"song_id": song_id, "cover_id": cover_id, "repr": repr}
                 )
 
+    return merge_song_representations(songs)
+
+def load_songs_coversshs(songs_dir=["hpcps80/"], features=["hpcp"]):
+    songs = {}
+    skipped_counter = 0
+    for song_dir, feature in zip(songs_dir, features):
+        songs[feature] = {}
+        origin_path = song_dir
+        entries = os.listdir(origin_path)
+
+        if feature == "mfcc":
+            mat_feature = "XMFCC"
+        elif feature == "hpcp":
+            mat_feature = "XHPCP"
+        elif feature == "cens":
+            mat_feature = "XCENS"
+        elif feature == "wav":
+            mat_feature = "XWAV"
+
+        for dir in entries:
+            subdir = os.listdir(origin_path + dir)
+
+            if len(subdir) <= 1:
+                skipped_counter += 1
+                print(
+                    f"Warning found song with no covers: {origin_path + dir}, skipping..."
+                )
+                continue
+
+            songs[feature][dir] = []
+
+            for song in subdir:
+                song_id = dir
+                cover_id = song
+                mat = scipy.io.loadmat(origin_path + dir + "/" + song)
+                repr = mat[mat_feature]  # No need to normalize since already normalized
+                repr = np.transpose(np.array(repr))
+                songs[feature][dir].append(
+                    {"song_id": song_id, "cover_id": cover_id, "repr": repr}
+                )
+
+    print(f"Total: {len(songs[features[0]])}, skipped: {skipped_counter}")
     return merge_song_representations(songs)
 
 
