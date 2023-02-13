@@ -36,7 +36,7 @@
   },
   "loss": "angular",
   "features": {
-    "n_batches": 256,
+    "n_batches": 1024,
     "songs_per_batch": 128,
     "input": "hpcp",
     "frame_size": 300,
@@ -48,7 +48,7 @@
   "train": {
     "train_perc": 0.8,
     "n_epochs": 15,
-    "lr": 0.0002,
+    "lr": 0.0005,
     "patience": 1,
     "checkpoints_path": "checkpoints/",
     "results_path": "results/"
