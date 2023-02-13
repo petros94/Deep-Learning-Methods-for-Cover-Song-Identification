@@ -25,7 +25,7 @@ def generate_metrics(model, data_set, segmented, results_path):
         distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
         df = generate_ROC(distances, clf_labels, results_path)
         df_prc = generate_PRC(distances, clf_labels, results_path)
-        map, mrr, mr1, pr10 = ranking_metrics(model, data_set, 10)
+        map, mrr, mr1, pr10 = ranking_metrics(model, data_set)
         generate_tsne(embeddings, song_labels, cover_names)
         return df, map.item(), mrr, mr1, pr10
 
@@ -207,7 +207,7 @@ def calc_MAP(array2d, version):
     return MAP / float(len(array2d)), top10 / float(len(array2d)) / 10, rank1 / float(len(array2d))
 
 
-def ranking_metrics(model, data_set, k):
+def ranking_metrics(model, data_set):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)

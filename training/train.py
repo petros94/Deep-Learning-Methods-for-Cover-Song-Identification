@@ -4,7 +4,7 @@ from training.train_cnn_triplet import train_triplet_loss
 from training.train_embeddings_angular import train_embeddings_loss
 
 
-def train(model, train_set, valid_set, config_path, checkpoint_dir, results_dir):
+def train(model, train_set, valid_set, config_path, checkpoint_dir, results_dir, valid_set_full=None):
     with open(config_path, "r") as f:
         config = json.load(f)
 
@@ -41,4 +41,5 @@ def train(model, train_set, valid_set, config_path, checkpoint_dir, results_dir)
             config["train"]["lr"],
             checkpoint_dir,
             results_dir,
+            valid_set_full
         )

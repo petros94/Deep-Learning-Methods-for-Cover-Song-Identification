@@ -43,6 +43,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
 
     train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
+    valid_set_full = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False)
     
     print(
         "Created training set: {} samples, valid set: {} samples".format(
@@ -60,6 +61,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
         config_path=config_path,
         checkpoint_dir=chk_dir_name,
         results_dir=res_dir_name,
+        valid_set_full=valid_set_full
     )
 
     print("Plot losses")

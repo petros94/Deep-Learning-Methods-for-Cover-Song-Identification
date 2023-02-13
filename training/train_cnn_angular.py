@@ -4,6 +4,8 @@ import numpy as np
 import torch
 import random
 
+from datasets.SimpleDataset import SimpleDataset
+from tuning.ranking_metrics import ranking_metrics
 from utils.generic import get_device
 
 from pytorch_metric_learning import miners, losses, distances
@@ -17,7 +19,8 @@ def train_angular_loss(model: torch.nn.Module,
                        patience: int,
                        lr: float,
                        checkpoints_path: str,
-                       results_path: str):
+                       results_path: str,
+                       valid_set_full: SimpleDataset = None):
     device = get_device()
     model.train()
     model.to(device)
@@ -68,7 +71,7 @@ def train_angular_loss(model: torch.nn.Module,
             if i % 16 == 0:
                 print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
-        print('Evaluating model')
+        print('Evaluating model on random segmented triplets')
         model.eval()
         valid_loss = 0
         with torch.no_grad():
@@ -85,6 +88,11 @@ def train_angular_loss(model: torch.nn.Module,
 
                 if i % 16 == 0:
                     print(f'batch {i}/{valid_batches}, loss: {loss.item()}')
+
+        if valid_set_full is not None:
+            print('Evaluation model on ranking metrics')
+            map, mrr, mr1, prk = ranking_metrics(model, valid_set_full)
+            print(f"MAP: {map}, MRR: {mrr}, MR1: {mr1}, prk: {prk}")
 
         if valid_loss < best_loss:
             print("New best random loss, saving model")
