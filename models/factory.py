@@ -1,5 +1,6 @@
 import json
 from models.resnet18.ResNet18 import from_config as make_resnet
+from models.resnet50.ResNet50 import from_config as make_resnet_50
 from models.cnn.cnn import from_config as make_cnn
 from models.cnn1d.cnn1d import from_config as make_cnn1d
 from models.lstm.lstm import from_config as make_lstm
@@ -31,6 +32,8 @@ def make_model(config_path: str = "models/config.json"):
 
     if config["model"]["type"] == "resnet18":
         model = make_resnet(config_path=config["model"]["config_path"])
+    elif config["model"]["type"] == "resnet50":
+        model = make_resnet_50(config_path=config["model"]["config_path"])
     elif config["model"]["type"] == "cnn":
         model = make_cnn(config_path=config["model"]["config_path"])
     elif config["model"]["type"] == "cnn1d":
