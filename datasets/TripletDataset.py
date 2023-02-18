@@ -11,6 +11,7 @@ class TripletDataset(torch.utils.data.Dataset):
         self.songs_per_batch = songs_per_batch
         self.song_segs = {}
         self.songs = self.filter_per_size(songs, frame_size)
+        self.frame_size = frame_size
         print(f"Initial songs: {len(songs)}, after filtering: {len(self.songs)}")
         
         """

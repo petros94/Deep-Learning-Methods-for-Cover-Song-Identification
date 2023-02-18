@@ -13,7 +13,7 @@ from datasets.TripletDataset import TripletDataset
 
 
 def train_angular_loss(model: torch.nn.Module,
-                       train_set: TripletDataset,
+                       train_sets: list[TripletDataset],
                        valid_set: TripletDataset,
                        n_epochs: int,
                        patience: int,
@@ -32,7 +32,7 @@ def train_angular_loss(model: torch.nn.Module,
     miner = miners.AngularMiner(angle=20, distance=distance)
     valid_miner = miners.AngularMiner(angle=0, distance=distance)
 
-    train_batches = len(train_set)
+    train_batches = len(train_sets[0])
     valid_batches = min(256, len(valid_set))
 
     best_loss = 1000000
@@ -51,25 +51,26 @@ def train_angular_loss(model: torch.nn.Module,
         model.train()
         epoch_loss = 0
         mean_triplets = 0
-        for i in range(len(train_set)):
-            # N X 1 X num_feats X num_samples, N
-            (data, labels) = train_set[i]
-            data = data.to(device)
-            labels = labels.to(device)
+        for train_set in train_sets:
+            for i in range(train_batches):
+                # N X 1 X num_feats X num_samples, N
+                (data, labels) = train_set[i]
+                data = data.to(device)
+                labels = labels.to(device)
 
-            optimizer.zero_grad()
-            embeddings = model(data)
-            triplets = miner(embeddings, labels)
+                optimizer.zero_grad()
+                embeddings = model(data)
+                triplets = miner(embeddings, labels)
 
-            loss = loss_func(embeddings, labels, triplets)
-            loss.backward()
-            optimizer.step()
+                loss = loss_func(embeddings, labels, triplets)
+                loss.backward()
+                optimizer.step()
 
-            epoch_loss += loss.item()
-            mean_triplets += miner.num_triplets
+                epoch_loss += loss.item()
+                mean_triplets += miner.num_triplets
 
-            if i % 16 == 0:
-                print(f'batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
+                if i % 16 == 0:
+                    print(f'frame size: {train_set.frame_size} batch {i}/{train_batches}, loss: {loss.item()}, triplets: {miner.num_triplets}')
 
         print('Evaluating model on random segmented triplets')
         model.eval()

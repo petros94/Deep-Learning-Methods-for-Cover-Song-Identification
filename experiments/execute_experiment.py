@@ -1,6 +1,7 @@
 import json
 import os
 
+import numpy as np
 import pandas as pd
 
 from datasets.factory import make_dataset
@@ -41,13 +42,14 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
         print("Spliting train/valid set")
         train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
-    train_set = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
+    train_sets = [make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True, frame_size=frame_size)
+                  for frame_size in np.arange(config['features']['frame_size']-200, config['features']['frame_size'], 50)]
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set_full = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False)
     
     print(
         "Created training set: {} samples, valid set: {} samples".format(
-            len(train_set), len(valid_set)
+            [len(train_set) for train_set in train_sets], len(valid_set)
         )
     )
 
@@ -56,7 +58,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
     print("Begin training")
     losses = train(
         model,
-        train_set,
+        train_sets,
         valid_set,
         config_path=config_path,
         checkpoint_dir=chk_dir_name,
