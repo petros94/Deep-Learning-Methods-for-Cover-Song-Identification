@@ -33,6 +33,7 @@ class ResNet50(nn.Module):
 
   def forward(self, x):
       output1 = self.forward_once(x)
+      print(output1.size())
       return output1
   
 def from_config(config_path: str):

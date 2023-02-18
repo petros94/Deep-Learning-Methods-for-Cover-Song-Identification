@@ -36,7 +36,7 @@
   },
   "loss": "angular",
   "features": {
-    "n_batches": 1024,
+    "n_batches": 512,
     "songs_per_batch": 128,
     "input": "hpcp",
     "frame_size": 300,
