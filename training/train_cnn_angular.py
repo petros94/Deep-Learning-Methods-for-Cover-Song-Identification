@@ -13,7 +13,7 @@ from datasets.TripletDataset import TripletDataset
 
 
 def train_angular_loss(model: torch.nn.Module,
-                       train_sets: list[TripletDataset],
+                       train_sets: list,
                        valid_set: TripletDataset,
                        n_epochs: int,
                        patience: int,
@@ -35,7 +35,7 @@ def train_angular_loss(model: torch.nn.Module,
     train_batches = len(train_sets[0])
     valid_batches = min(256, len(valid_set))
 
-    best_loss = 1000000
+    best_loss = 0
     current_patience = 0
 
     losses_history = {
@@ -95,9 +95,9 @@ def train_angular_loss(model: torch.nn.Module,
             map, mrr, mr1, prk = ranking_metrics(model, valid_set_full)
             print(f"MAP: {map}, MRR: {mrr}, MR1: {mr1}, prk: {prk}")
 
-        if valid_loss < best_loss:
+        if map > best_loss:
             print("New best random loss, saving model")
-            best_loss = valid_loss
+            best_loss = map
             current_patience = 0
 
             # Export best model checkpoint

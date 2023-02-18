@@ -65,6 +65,11 @@ class TripletDataset(torch.utils.data.Dataset):
                     idx = perm[:4]
                     K = K[idx]
 
+                    # randomly shift key
+                    for i in range(len(K)):
+                        K[i] = torch.roll(K[i], shifts=random.randint(0, 12), dims=1)
+
+
                 samples.append(K)
                 labels.extend([int_label]*K.size(0))
                 self.total_samples += K.size(0)
