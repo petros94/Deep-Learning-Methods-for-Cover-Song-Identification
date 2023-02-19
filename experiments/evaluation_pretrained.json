@@ -14,8 +14,8 @@
     ],
     "model": {
         "type": "cnn",
-        "config_path": "/content/Deep-Learning-Methods-for-Cover-Song-Identification/checkpoints/2023-02-12 17:52:45.798781_cnn_hpcp_angular/config.json",
-        "checkpoint_path": "/content/Deep-Learning-Methods-for-Cover-Song-Identification/checkpoints/2023-02-12 17:52:45.798781_cnn_hpcp_angular/checkpoint.tar"
+        "config_path": "checkpoints/2023-02-18 22:09:05.398441_cnn_hpcp_angular/config.json",
+        "checkpoint_path": "checkpoints/2023-02-18 22:09:05.398441_cnn_hpcp_angular/checkpoint.tar"
     },
     "loss": "angular",
     "features": {

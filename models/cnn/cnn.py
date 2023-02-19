@@ -24,10 +24,9 @@ class CNN(nn.Module):
         self.pool_size = self.config["pool_size"]
         self.drop_prob_conv = self.config["drop_prob"]
         self.pooling = self.config["pooling"]
-        self.linear_size = self.config["linear_size"]
 
         self.features = self.create_network()
-        self.linear = nn.Linear(in_features=self.channels[-1], out_features=self.linear_size)
+        self.linear = nn.Linear(in_features=self.channels[-1], out_features=256)
 
         def count_parameters(model):
             table = PrettyTable(["Modules", "Parameters"])
