@@ -39,7 +39,7 @@
     "n_batches": 512,
     "songs_per_batch": 128,
     "input": "hpcp",
-    "frame_size": 300,
+    "frame_size": [150, 200, 250, 300],
     "scale": [
       1,
       1

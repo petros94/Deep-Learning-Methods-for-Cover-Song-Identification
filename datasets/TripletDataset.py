@@ -60,14 +60,15 @@ class TripletDataset(torch.utils.data.Dataset):
                 K = random.choice(self.song_segs[song_id])
 
                 num_covers = K.size(0)
+                # limit amount of cover songs in a batch
                 if num_covers > 4:
                     perm = torch.randperm(num_covers)
                     idx = perm[:4]
                     K = K[idx]
 
-                    # randomly shift key
-                    for i in range(len(K)):
-                        K[i] = torch.roll(K[i], shifts=random.randint(0, 12), dims=1)
+                # randomly shift key
+                for i in range(len(K)):
+                    K[i] = torch.roll(K[i], shifts=random.randint(0, 12), dims=1)
 
 
                 samples.append(K)

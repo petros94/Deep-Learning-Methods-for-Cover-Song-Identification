@@ -42,8 +42,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
         print("Spliting train/valid set")
         train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
-    train_sets = [make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True, frame_size=frame_size)
-                  for frame_size in np.arange(config['features']['frame_size']-200, config['features']['frame_size'], 50)]
+    train_sets = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
     valid_set_full = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False)
     

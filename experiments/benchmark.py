@@ -35,7 +35,7 @@ def benchmark_device(config_path: str = "experiments/evaluation_pretrained.json"
     model.eval()
 
     print("Loading songs")
-    _, test_songs = from_config(config_path=config_path)
+    _, test_songs, _ = from_config(config_path=config_path)
 
     frame_sizes = []
     durations = []
@@ -45,8 +45,8 @@ def benchmark_device(config_path: str = "experiments/evaluation_pretrained.json"
     test_set = TripletDataset(test_songs,
                               n_batches=512,
                               songs_per_batch=16,
-                              frame_size=12000,
-                              scale=[1, 0.2])
+                              frame_size=300,
+                              scale=[1, 1])
     for i in range(len(test_set)):
         (data, labels) = test_set[i]
         data = data.type(torch.FloatTensor).to(device)
@@ -55,25 +55,27 @@ def benchmark_device(config_path: str = "experiments/evaluation_pretrained.json"
 
 
     print("actual test")
-    for frame_size in (750, 1500, 3000, 6000, 12000):
+    for frame_size in (100, 150, 200, 250, 300):
         test_set = TripletDataset(test_songs,
-                                    n_batches=512,
-                                    songs_per_batch=16,
+                                    n_batches=16,
+                                    songs_per_batch=32,
                                     frame_size=frame_size,
-                                    scale=[1, 0.2])
+                                    scale=[1, 1])
         count = 0
         frame_sizes.append(frame_size)
         samples = []
+        tot_num_songs = []
         print("Inference")
         for i in range(len(test_set)):
             count += 1
             (data, labels) = test_set[i]
             data = data.type(torch.FloatTensor).to(device)
-            data = data[0].unsqueeze(0)
+            num_songs = len(data)
             before = time.time()
             embeddings = model(data)
             duration = time.time() - before
-            samples.append(duration)
+            samples.append(duration/num_songs)
+            tot_num_songs.append(num_songs)
         print("Done")
 
         durations.append(np.mean(samples))
@@ -81,7 +83,7 @@ def benchmark_device(config_path: str = "experiments/evaluation_pretrained.json"
 
     df = pd.DataFrame({'frame_size': frame_sizes,
                        'mean_duration': durations,
-                       'total_duration': total_durations,
+                       # 'total_duration': total_durations,
                        'count': len(frame_sizes)*[count],
                        'device': len(frame_sizes)*[device]})
     return df
