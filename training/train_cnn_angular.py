@@ -111,15 +111,15 @@ def train_angular_loss(model: torch.nn.Module,
             # Save results
             with open(results_path + '/train_results.json', "w") as f:
                 json.dump({'n_epochs': epoch, 'valid_loss': valid_loss / valid_batches,
-                           'train_loss': epoch_loss / train_batches}, f)
+                           'train_loss': epoch_loss / train_batches / len(train_sets)}, f)
         else:
             current_patience += 1
 
-        print(f"Epoch {epoch} random triplet valid loss: {valid_loss / valid_batches}")
+        print(f"Epoch {epoch} random triplet valid loss: {valid_loss / valid_batches }")
         # test(train_set=train_set, valid_set=valid_set, model=model, accuracy_calculator=acc_calc)
         print(
-            f"Epoch {epoch} train loss: {epoch_loss / train_batches}, mean triplets: {int(float(mean_triplets) / train_batches)}, perf score: {epoch_loss * int(float(mean_triplets) / train_batches)}")
-        losses_history['train'].append(epoch_loss / train_batches)
+            f"Epoch {epoch} train loss: {epoch_loss / train_batches / len(train_sets)}, mean triplets: {int(float(mean_triplets) / train_batches / len(train_sets))}, perf score: {epoch_loss * int(float(mean_triplets) / train_batches / len(train_sets))}")
+        losses_history['train'].append(epoch_loss / train_batches / len(train_sets))
         losses_history['valid'].append(valid_loss / valid_batches)
         losses_history['epoch'].append(epoch)
 

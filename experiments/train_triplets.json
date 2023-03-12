@@ -6,32 +6,24 @@
     {
       "type": "covers1000",
       "path": [
-        "tmp/content/hpcps/"
+        "/content/hpcps/"
       ],
       "n_samples": 1000
     },
     {
       "type": "covers80",
       "path": [
-        "tmp/content/full_dataset_hpcp/"
+        "/content/full_dataset_hpcp/content/full_dataset_hpcp/"
       ],
       "n_samples": 1000
     }
   ],
-  "valid_datasets": [
-    {
-      "type": "covers80",
-      "path": [
-        "tmp/content/dimitris_dataset_hpcp/"
-      ],
-      "n_samples": 1000
-    }
-  ],
+  "valid_datasets": [],
   "test_datasets": [
     {
       "type": "covers80",
       "path": [
-        "tmp/content/hpcps80/"
+        "/content/hpcps80/content/hpcps80/"
       ],
       "n_samples": 1000
     }
