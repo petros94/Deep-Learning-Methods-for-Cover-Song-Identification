@@ -43,7 +43,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
         train_songs, valid_songs = split_songs(train_songs, config["train"]["train_perc"])
 
     train_sets = make_dataset(train_songs, config_path=config_path, type=config["loss"], segmented=True)
-    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)
+    valid_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=True)[-1]
     valid_set_full = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False)
     
     print(
@@ -67,15 +67,13 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
 
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
-    
-    if config['model']['type'] != "embeddings":
-        evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=True)
-    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, segmented=False)
+
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model)
     
     return res_dir_name, chk_dir_name
 
 
-def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json", segmented=None):
+def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json"):
     with open(config_path, "r") as f:
         config = json.load(f)
 
@@ -87,33 +85,23 @@ def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json", 
     print("Loading songs")
     _, test_songs, _ = from_config(config_path=config_path)
 
-    if segmented is None:
-        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=True)
-        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=False)
-    else:
-        evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, segmented=segmented)
+    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs)
 
     return res_dir_name
 
 
-def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_songs=None, segmented=False):
-    if segmented:
-        print("Evaluating for segmented input")
-        res_dir_name = results_path + '/segmented'
-    else:
-        print("Evaluating on full song input")    
-        res_dir_name = results_path + '/full'
-        
+def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_songs=None):
+    res_dir_name = results_path + '/full'
     os.mkdir(res_dir_name)
     
     with open(config_path, "r") as f:
         config = json.load(f)
         
     if len(test_songs) > 0:
-        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=segmented, n_batches=256)
+        test_set = make_dataset(test_songs, config_path=config_path, type=config["loss"], segmented=False, n_batches=256)
     else:
         print("No test set provided, validation set will be used")
-        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=segmented, n_batches=256)
+        test_set = make_dataset(valid_songs, config_path=config_path, type=config["loss"], segmented=False, n_batches=256)
 
     if model is None:
         model = make_model(config_path=config_path)
@@ -122,7 +110,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
     if config["model"]["type"] == "embeddings":
         roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
     else:
-        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, segmented, results_path=res_dir_name)
+        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, False, results_path=res_dir_name)
 
     print(f"MAP: {mean_average_precision}")
     print(f"MRR: {mrr}")
@@ -140,7 +128,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         df = pd.DataFrame()
     else:
         df = generate_classification_metrics(
-            clf, test_set, segmented=segmented, results_path=res_dir_name
+            clf, test_set, segmented=False, results_path=res_dir_name
         )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)
