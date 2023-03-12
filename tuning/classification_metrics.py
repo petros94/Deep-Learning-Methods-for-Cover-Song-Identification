@@ -20,7 +20,10 @@ def generate_metrics(clf, data_set, segmented, results_path: str):
     if segmented:
         return generate_metrics_segments(clf, data_set, results_path)
     else:
-        return generate_metrics_full(clf, data_set, results_path)
+        generate_metrics_full(clf, data_set, results_path, balanced=False)
+        df = generate_metrics_full(clf, data_set, results_path, balanced=True)
+        return df
+
 
 
 def generate_metrics_segments(
@@ -54,7 +57,7 @@ def generate_metrics_segments(
     return generate_metrics_bare(y_true, y_pred, results_path)
 
 
-def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
+def generate_metrics_full(clf, data_set: SimpleDataset, results_path, balanced=True):
     clf.model.eval()
     device = get_device()
     clf.model.type(torch.FloatTensor).to(device)
@@ -69,47 +72,48 @@ def generate_metrics_full(clf, data_set: SimpleDataset, results_path):
             
         embeddings = torch.cat(embeddings, dim=0)
 
-        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-        song_labels = torch.tensor(data_set.labels)
+        if not balanced:
+            distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+            song_labels = torch.tensor(data_set.labels)
 
-        for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
-            ids = torch.argwhere(song_labels == lab)
-            ids = ids.flatten()
-            ids = ids[ids != id]
-            pos_dist = d[ids]
+            for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
+                ids = torch.argwhere(song_labels == lab)
+                ids = ids.flatten()
+                ids = ids[ids != id]
+                pos_dist = d[ids]
 
-            inv = 2 - pos_dist
-            pos_preds = (inv > clf.D) * 1
-            pos_preds = pos_preds.cpu().tolist()
+                inv = 2 - pos_dist
+                pos_preds = (inv > clf.D) * 1
+                pos_preds = pos_preds.cpu().tolist()
 
-            y_pred.extend(pos_preds)
-            y_true.extend([1] * len(pos_preds))
+                y_pred.extend(pos_preds)
+                y_true.extend([1] * len(pos_preds))
 
-            ids = torch.argwhere(song_labels != lab)
-            ids = ids.flatten()
-            neg_dist = d[ids]
-            inv = 2 - neg_dist
-            neg_preds = (inv > clf.D) * 1
-            neg_preds = neg_preds.cpu().tolist()
-            y_pred.extend(neg_preds)
-            y_true.extend([0] * len(neg_preds))
-        
-        # for i in range(100):
-        #     a, p, n = miner(embeddings, torch.tensor(data_set.labels))
-        #
-        #     pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
-        #     inv = 2 - pos_dist
-        #     pos_preds = (inv > clf.D)*1
-        #     pos_preds = pos_preds.cpu().tolist()
-        #     y_pred.extend(pos_preds)
-        #     y_true.extend([1] * len(pos_preds))
-        #
-        #     neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
-        #     inv = 2 - neg_dist
-        #     neg_preds = (inv > clf.D)*1
-        #     neg_preds = neg_preds.cpu().tolist()
-        #     y_pred.extend(neg_preds)
-        #     y_true.extend([0] * len(neg_preds))
+                ids = torch.argwhere(song_labels != lab)
+                ids = ids.flatten()
+                neg_dist = d[ids]
+                inv = 2 - neg_dist
+                neg_preds = (inv > clf.D) * 1
+                neg_preds = neg_preds.cpu().tolist()
+                y_pred.extend(neg_preds)
+                y_true.extend([0] * len(neg_preds))
+        else:
+            for i in range(100):
+                a, p, n = miner(embeddings, torch.tensor(data_set.labels))
+
+                pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+                inv = 2 - pos_dist
+                pos_preds = (inv > clf.D)*1
+                pos_preds = pos_preds.cpu().tolist()
+                y_pred.extend(pos_preds)
+                y_true.extend([1] * len(pos_preds))
+
+                neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
+                inv = 2 - neg_dist
+                neg_preds = (inv > clf.D)*1
+                neg_preds = neg_preds.cpu().tolist()
+                y_pred.extend(neg_preds)
+                y_true.extend([0] * len(neg_preds))
         
         return generate_metrics_bare(y_true, y_pred, results_path)
 
