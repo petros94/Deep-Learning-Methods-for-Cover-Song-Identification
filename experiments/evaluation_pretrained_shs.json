@@ -5,9 +5,9 @@
     "train_datasets": [],
     "test_datasets": [
         {
-            "type": "covers80",
+            "type": "coversshs",
             "path": [
-                "/content/hpcps80"
+                "/content/full_dataset_hpcp_shs100k/content/Diplomatiki Petrou - full dataset 4_12_hpcp_shs100k/"
             ],
             "n_samples": 10000
         }
@@ -19,13 +19,13 @@
     },
     "loss": "angular",
     "features": {
-        "n_batches": 512,
+        "n_batches": 256,
         "songs_per_batch": 128,
         "input": "hpcp",
-        "frame_size": [1400, 2000, 2600, 3200, 3800, 4400],
+        "frame_size": 300,
         "scale": [
             1,
-            0.1
+            1
         ]
     },
     "train": {
