@@ -16,14 +16,11 @@ from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
 
-def generate_metrics(clf, data_set, segmented, results_path: str):
+def generate_metrics(clf, data_set, segmented, results_path: str, balanced):
     if segmented:
         return generate_metrics_segments(clf, data_set, results_path)
     else:
-        generate_metrics_full(clf, data_set, results_path, balanced=False)
-        df = generate_metrics_full(clf, data_set, results_path, balanced=True)
-        return df
-
+        return generate_metrics_full(clf, data_set, results_path, balanced=balanced)
 
 
 def generate_metrics_segments(

@@ -77,20 +77,26 @@ def evaluate_model(config_path: str = "experiments/evaluation_pretrained.json"):
     with open(config_path, "r") as f:
         config = json.load(f)
 
-    print("Creating directory for checkpoint and saving configuration used")
-    date_ = f"{datetime.now()}_{config['model']['type']}_{config['features']['input']}_{config['loss']}"
-    res_dir_name = config["train"]["results_path"] + date_
-    os.mkdir(res_dir_name)
-
     print("Loading songs")
     _, test_songs, _ = from_config(config_path=config_path)
 
-    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs)
+    print("Creating directory for checkpoint and saving configuration used")
+    date_ = f"{datetime.now()}_{config['model']['type']}_{config['features']['input']}_{config['loss']}"
+
+    print("Evaluating balanced")
+    res_dir_name = config["train"]["results_path"] + date_ + "_balanced"
+    os.mkdir(res_dir_name)
+    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, balanced=True)
+
+    print("Evaluating imbalanced")
+    res_dir_name = config["train"]["results_path"] + date_ + "_imbalanced"
+    os.mkdir(res_dir_name)
+    evaluate_test_set(config_path=config_path, results_path=res_dir_name, test_songs=test_songs, balanced=False)
 
     return res_dir_name
 
 
-def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_songs=None):
+def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_songs=None, balanced=False):
     res_dir_name = results_path + '/full'
     os.mkdir(res_dir_name)
     
@@ -110,7 +116,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
     if config["model"]["type"] == "embeddings":
         roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_embeddings_metrics(model, test_set, results_path=res_dir_name)
     else:
-        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, False, results_path=res_dir_name)
+        roc_stats, mean_average_precision, mrr, mr1, pr10 = generate_ranking_metrics(model, test_set, False, results_path=res_dir_name, balanced=balanced)
 
     print(f"MAP: {mean_average_precision}")
     print(f"MRR: {mrr}")
@@ -128,7 +134,7 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
         df = pd.DataFrame()
     else:
         df = generate_classification_metrics(
-            clf, test_set, segmented=False, results_path=res_dir_name
+            clf, test_set, segmented=False, results_path=res_dir_name, balanced=balanced
         )
 
     generate_report(config, df, mean_average_precision, mrr, res_dir_name)

@@ -15,14 +15,14 @@ from training.miners import RandomTripletMiner
 from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
-def generate_metrics(model, data_set, segmented, results_path):
+def generate_metrics(model, data_set, segmented, results_path, balanced):
     if segmented:
         distances, clf_labels = generate_posteriors_segments(model, data_set)
         df = generate_ROC(distances, clf_labels, results_path)
         df_prc = generate_PRC(distances, clf_labels, results_path)
         return df, 0, 0, 0, 0
     else:
-        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set)
+        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set, balanced)
         df = generate_ROC(distances, clf_labels, results_path)
         df_prc = generate_PRC(distances, clf_labels, results_path)
         map, mrr, mr1, pr10 = ranking_metrics(model, data_set)
@@ -81,7 +81,7 @@ def generate_posteriors_segments(
     return distances, clf_labels
 
 
-def generate_posteriors_full(model, data_set: SimpleDataset):
+def generate_posteriors_full(model, data_set: SimpleDataset, balanced=False):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
@@ -99,35 +99,35 @@ def generate_posteriors_full(model, data_set: SimpleDataset):
             cover_names.append(cover_name)
 
         embeddings = torch.cat(embeddings, dim=0)
-        distance_matrix = torch.cdist(embeddings, embeddings, p=2)
-        song_labels = torch.tensor(song_labels)
+        if not balanced:
+            distance_matrix = torch.cdist(embeddings, embeddings, p=2)
+            song_labels = torch.tensor(song_labels)
 
-        for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
-            ids = torch.argwhere(song_labels == lab)
-            ids = ids.flatten()
-            ids = ids[ids != id]
-            pos_dist = d[ids]
-            distances.append(pos_dist)
-            clf_labels.extend([1] * pos_dist.size()[0])
+            for id, (d, lab) in enumerate(zip(distance_matrix, song_labels)):
+                ids = torch.argwhere(song_labels == lab)
+                ids = ids.flatten()
+                ids = ids[ids != id]
+                pos_dist = d[ids]
+                distances.append(pos_dist)
+                clf_labels.extend([1] * pos_dist.size()[0])
 
-            ids = torch.argwhere(song_labels != lab)
-            ids = ids.flatten()
-            neg_dist = d[ids]
-            distances.append(neg_dist)
-            clf_labels.extend([0] * neg_dist.size()[0])
+                ids = torch.argwhere(song_labels != lab)
+                ids = ids.flatten()
+                neg_dist = d[ids]
+                distances.append(neg_dist)
+                clf_labels.extend([0] * neg_dist.size()[0])
+        else:
+            for i in range(128):
+                a, p, n = miner(embeddings, torch.tensor(data_set.labels))
 
+                pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
+                neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
 
-        # for i in range(128):
-        #     a, p, n = miner(embeddings, torch.tensor(data_set.labels))
-        #
-        #     pos_dist = torch.norm(embeddings[a] - embeddings[p], dim=1)
-        #     neg_dist = torch.norm(embeddings[a] - embeddings[n], dim=1)
-        #
-        #     distances.append(pos_dist)
-        #     clf_labels.extend([1] * pos_dist.size()[0])
-        #
-        #     distances.append(neg_dist)
-        #     clf_labels.extend([0] * neg_dist.size()[0])
+                distances.append(pos_dist)
+                clf_labels.extend([1] * pos_dist.size()[0])
+
+                distances.append(neg_dist)
+                clf_labels.extend([0] * neg_dist.size()[0])
 
         distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
         return distances, clf_labels, embeddings, song_labels, cover_names
