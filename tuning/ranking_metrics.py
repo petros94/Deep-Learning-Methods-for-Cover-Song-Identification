@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from sklearn.metrics import (
     roc_curve,
@@ -15,6 +17,7 @@ from training.miners import RandomTripletMiner
 from datasets.TripletDataset import TripletDataset
 from datasets.SimpleDataset import SimpleDataset
 
+
 def generate_metrics(model, data_set, segmented, results_path, balanced):
     if segmented:
         distances, clf_labels = generate_posteriors_segments(model, data_set)
@@ -22,7 +25,8 @@ def generate_metrics(model, data_set, segmented, results_path, balanced):
         df_prc = generate_PRC(distances, clf_labels, results_path)
         return df, 0, 0, 0, 0
     else:
-        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set, balanced)
+        distances, clf_labels, embeddings, song_labels, cover_names = generate_posteriors_full(model, data_set,
+                                                                                               balanced)
         df = generate_ROC(distances, clf_labels, results_path)
         df_prc = generate_PRC(distances, clf_labels, results_path)
         map, mrr, mr1, pr10 = ranking_metrics(model, data_set)
@@ -50,21 +54,26 @@ def generate_embeddings_metrics(model, data_set, results_path):
 
 
 def generate_posteriors_segments(
-    model, data_set: TripletDataset): 
-    
+        model, data_set: TripletDataset):
     model.eval()
     device = get_device()
     model.type(torch.FloatTensor).to(device)
     distances = []
     clf_labels = []
     miner = RandomTripletMiner
+    inference_time = 0
+    data_len = 0
     with torch.no_grad():
         for i in range(len(data_set)):
             # N X 1 X num_feats X num_samples, N
             (data, labels) = data_set[i]
+            data_len += len(data)
             data = data.type(torch.FloatTensor).to(device)
 
+            st = time.time() * 1000  # ms
             embeddings = model(data)
+            et = time.time() * 1000  # ms
+            inference_time += (et - st)
 
             a, p, n = miner(embeddings, labels)
 
@@ -76,6 +85,8 @@ def generate_posteriors_segments(
 
             distances.append(neg_dist)
             clf_labels.extend([0] * neg_dist.size()[0])
+
+    print(f"Average inference time: {inference_time / data_len}")
 
     distances, clf_labels = torch.cat(distances).cpu().numpy(), np.array(clf_labels)
     return distances, clf_labels
@@ -180,6 +191,7 @@ def calc_MRR(distance_matrix: torch.Tensor, labels: torch.Tensor):
     mrr = np.mean(rr)
     return mrr
 
+
 def calc_MAP(array2d, version):
     MAP, top10, rank1 = 0, 0, 0
 
@@ -223,7 +235,6 @@ def ranking_metrics(model, data_set):
 
         map, prk, mr1 = calc_MAP(distance_matrix, labels)
         mrr = calc_MRR(distance_matrix, labels)
-
 
         return map, mrr, mr1, prk
 

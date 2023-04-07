@@ -29,17 +29,17 @@
     }
   ],
   "model": {
-    "type": "cnn",
-    "config_path": "models/cnn/config.json",
+    "type": "lstm",
+    "config_path": "models/lstm/config.json",
     "checkpoint_path": null
   },
   "loss": "angular",
   "features": {
     "no_augment": false,
-    "n_batches": 512,
+    "n_batches": 256,
     "songs_per_batch": 128,
     "input": "hpcp",
-    "frame_size": [1400, 2000, 2600, 3200, 3800, 4400],
+    "frame_size": [4400],
     "scale": [
       1,
       0.1

@@ -19,11 +19,11 @@
     },
     "loss": "angular",
     "features": {
-        "no_augment": "True",
+        "no_augment": true,
         "n_batches": 512,
         "songs_per_batch": 128,
         "input": "hpcp",
-        "frame_size": [1400, 2000, 2600, 3200, 3800, 4400],
+        "frame_size": [650, 900, 1300, 2600, 4000, 7800],
         "scale": [
             1,
             0.1

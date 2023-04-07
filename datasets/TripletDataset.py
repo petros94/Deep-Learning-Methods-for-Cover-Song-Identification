@@ -5,7 +5,7 @@ import numpy as np
 from utils.generic import sample_songs, segment_and_scale
 
 class TripletDataset(torch.utils.data.Dataset):
-    def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33)):
+    def __init__(self, songs, n_batches=256, songs_per_batch=64, frame_size=400, scale=(1, 0.33), no_augment=False):
         print("Creating TripletDataset")
         self.n_batches = n_batches
         self.songs_per_batch = songs_per_batch
@@ -67,8 +67,9 @@ class TripletDataset(torch.utils.data.Dataset):
                     K = K[idx]
 
                 # randomly shift key
-                for i in range(len(K)):
-                    K[i] = torch.roll(K[i], shifts=random.randint(0, 12), dims=1)
+                if not no_augment:
+                    for i in range(len(K)):
+                        K[i] = torch.roll(K[i], shifts=random.randint(0, 12), dims=1)
 
 
                 samples.append(K)

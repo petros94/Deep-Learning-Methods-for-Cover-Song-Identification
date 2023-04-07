@@ -130,6 +130,7 @@ def generate_metrics_bare(y_true, y_pred, results_path):
         plt.savefig(results_path + "/confusion.png")
 
     print(f"Accuracy is: {acc}")
+    print(f"F1 is: {f1}")
     print(df)
     plt.show()
     return df

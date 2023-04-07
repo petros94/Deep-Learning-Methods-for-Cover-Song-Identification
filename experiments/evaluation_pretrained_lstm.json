@@ -7,19 +7,19 @@
         {
             "type": "covers80",
             "path": [
-                "tmp/content/hpcps80/"
+                "/content/greek_dataset_hpcp/"
             ],
             "n_samples": 10000
         }
     ],
     "model": {
-        "type": "cnn",
-        "config_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-03-12 15:30:26.907966_cnn_hpcp_angular/config.json",
-        "checkpoint_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-03-12 15:30:26.907966_cnn_hpcp_angular/checkpoint.tar"
+        "type": "lstm+cnn",
+        "config_path": "checkpoints/2023-02-18 22:09:05.398441_cnn_hpcp_angular/config.json",
+        "checkpoint_path": "checkpoints/2023-02-18 22:09:05.398441_cnn_hpcp_angular/checkpoint.tar"
     },
     "loss": "angular",
     "features": {
-        "no_augment": "True",
+        "no_augment": true,
         "n_batches": 512,
         "songs_per_batch": 128,
         "input": "hpcp",

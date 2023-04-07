@@ -21,8 +21,12 @@ class LSTM(nn.Module):
             dropout=0.2,
         )
         self.output_size = output_size
-        self.fc = nn.Linear(
+        self.fc_out_1 = nn.Linear(
             in_features=(2 if bidirectional else 1) * self.hidden_size,
+            out_features=output_size,
+        )
+        self.fc_out_2 = nn.Linear(
+            in_features=output_size,
             out_features=output_size,
         )
         self.dropout = nn.Dropout(0.2)
@@ -53,8 +57,10 @@ class LSTM(nn.Module):
         #     if self.bidirectional
         #     else h[-1, :, :]
         # )
-        out_packed = out_packed[-1, :, :]
-        out = self.fc(out_packed)
+        out_packed = torch.sum(out_packed[:, :, :], axis=0)
+        out = self.fc_out_1(out_packed)
+        out = nn.functional.relu(out)
+        out = self.fc_out_2(out)
         return out
 
 

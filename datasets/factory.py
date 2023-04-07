@@ -21,7 +21,8 @@ def make_dataset(songs: dict, config_path: str, type: str, segmented: bool, n_ba
                                 n_batches=n_batches if n_batches is not None else config['features']['n_batches'], 
                                 songs_per_batch=config['features']['songs_per_batch'],
                                 frame_size=frame_size,
-                                scale=config['features']['scale']) for frame_size in config['features']['frame_size']]
+                                scale=config['features']['scale'],
+                                no_augment=config['features']['no_augment']) for frame_size in config['features']['frame_size']]
     else:
         return SimpleDataset(songs, config['features']['scale'])
         

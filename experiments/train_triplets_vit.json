@@ -29,15 +29,15 @@
     }
   ],
   "model": {
-    "type": "cnn",
-    "config_path": "models/cnn/config.json",
+    "type": "vit",
+    "config_path": "models/vit/config.json",
     "checkpoint_path": null
   },
   "loss": "angular",
   "features": {
     "no_augment": false,
-    "n_batches": 512,
-    "songs_per_batch": 128,
+    "n_batches": 256,
+    "songs_per_batch": 64,
     "input": "hpcp",
     "frame_size": [1400, 2000, 2600, 3200, 3800, 4400],
     "scale": [
