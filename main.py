@@ -1,7 +1,5 @@
-import logging
-
-from experiments.execute_experiment import execute_single
+# from experiments.execute_experiment import execute_single, evaluate_model
+from experiments.execute_experiment_different_segments_sizes import evaluate_model
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    execute_single()
+    evaluate_model("experiments/evaluation_pretrained_different_segments.json")
