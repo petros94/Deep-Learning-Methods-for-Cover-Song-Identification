@@ -132,5 +132,5 @@ def generate_metrics_bare(y_true, y_pred, results_path):
     print(f"Accuracy is: {acc}")
     print(f"F1 is: {f1}")
     print(df)
-    plt.show()
+    # plt.show()
     return df

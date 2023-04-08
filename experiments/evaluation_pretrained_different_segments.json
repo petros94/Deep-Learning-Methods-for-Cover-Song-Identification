@@ -13,9 +13,9 @@
         }
     ],
     "model": {
-        "type": "cnn",
-        "config_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-03-12 15:30:26.907966_cnn_hpcp_angular/config.json",
-        "checkpoint_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-03-12 15:30:26.907966_cnn_hpcp_angular/checkpoint.tar"
+        "type": "lstm",
+        "config_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-04-07 10:22:28.162918_lstm_hpcp_angular/config.json",
+        "checkpoint_path": "/Users/petrosmitseas/Documents/MscAI/checkpoints/2023-04-07 10:22:28.162918_lstm_hpcp_angular/checkpoint.tar"
     },
     "loss": "angular",
     "features": {

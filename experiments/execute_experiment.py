@@ -68,7 +68,7 @@ def execute_single(config_path: str = "experiments/train_triplets.json"):
     print("Plot losses")
     visualize_losses(losses, file_path=res_dir_name)
 
-    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model)
+    evaluate_test_set(config_path, results_path=res_dir_name, test_songs=test_songs, valid_songs=valid_songs, model=model, balanced=True)
     
     return res_dir_name, chk_dir_name
 
