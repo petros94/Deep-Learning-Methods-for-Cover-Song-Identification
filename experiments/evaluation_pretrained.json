@@ -15,7 +15,8 @@
     "model": {
         "type": "cnn",
         "config_path": "",
-        "checkpoint_path": ""
+        "checkpoint_path": "",
+        "threshold": null
     },
     "loss": "angular",
     "features": {

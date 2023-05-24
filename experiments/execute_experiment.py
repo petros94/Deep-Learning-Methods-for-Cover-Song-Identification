@@ -125,6 +125,8 @@ def evaluate_test_set(config_path, results_path, test_songs, model=None, valid_s
 
     try:
         thr = config["model"]["threshold"]
+        if thr is None:
+            thr = roc_stats.loc[roc_stats["tpr"] > 0.7, "thr"].iloc[0]
     except KeyError:
         thr = roc_stats.loc[roc_stats["tpr"] > 0.7, "thr"].iloc[0]
 
