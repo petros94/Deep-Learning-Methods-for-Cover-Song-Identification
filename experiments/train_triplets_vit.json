@@ -36,10 +36,10 @@
   "loss": "angular",
   "features": {
     "no_augment": false,
-    "n_batches": 256,
+    "n_batches": 128,
     "songs_per_batch": 64,
     "input": "hpcp",
-    "frame_size": [1400, 2000, 2600, 3200, 3800, 4400],
+    "frame_size": [1400, 2000, 2600, 3200, 3800],
     "scale": [
       1,
       0.1
